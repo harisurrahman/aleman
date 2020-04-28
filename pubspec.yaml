@@ -32,8 +32,9 @@ dependencies:
   persian: ^0.1.4
   audioplayers: 
   scrollable_positioned_list: ^0.1.3
-  dio: 
-  path_provider: 1.4.2
+  dio: any
+  path_provider: any
+  shared_preferences: ^0.5.7
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +56,7 @@ flutter:
     - assets/images/
     - assets/json/
     - assets/quran/
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

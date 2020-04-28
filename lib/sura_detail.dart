@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'dto/load_sura.dart';
@@ -6,6 +7,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SuraDetail extends StatefulWidget {
   final String data;
@@ -34,12 +36,18 @@ class _SuraDetailState extends State<SuraDetail> {
   final String lang;
   final int index;
   final int ttlayas;
+
   _SuraDetailState(this.data, this.name, this.lang, this.index, this.ttlayas);
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
   int count = 0;
   bool pause = false;
+  bool isDownload = false;
+  String progress = '0';
+  double parsentage = 0;
+  final baseUrl = 'http://www.everyayah.com/data/Abdullah_Basfar_32kbps/';
+  bool isPlaying = false;
 
   AudioPlayer advancedPlayer = AudioPlayer();
 
@@ -84,38 +92,80 @@ class _SuraDetailState extends State<SuraDetail> {
     dir = await getApplicationDocumentsDirectory();
     for (int i = 1; i <= ttlayas; i++) {
       String sura =
-          'http://www.everyayah.com/data/Abdul_Basit_Murattal_192kbps/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3';
+          '$baseUrl${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3';
       bool isExists = await File(
               '${dir.path}/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3')
           .exists();
       if (!isExists) {
+        isDownload = true;
         Dio dio = Dio();
-        await dio.download(sura,
-            '${dir.path}/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3',
-            onReceiveProgress: (rec, ttl) {
-          //setState(() {
-          //progress = 'Progress : $i of 285';
-          //});
-        });
+        try {
+          await dio.download(sura,
+              '${dir.path}/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3',
+              onReceiveProgress: (rec, ttl) {
+            setState(() {
+              progress = ((i / ttlayas) * 100).toStringAsFixed(0);
+              parsentage = (((i / ttlayas) * 100) / 100);
+            });
+          });
+        } catch (err) {
+          print(err);
+        }
       }
     }
+    isDownload = false;
   }
 
   play() async {
     for (int i = 1; i < ttlayas; i++) {
-      active[i] = false;;
+      active[i] = false;
     }
     count = 0;
     setState(() {
+      isPlaying = true;
       active[count] = true;
     });
     await this.dowloadAyas();
-    await advancedPlayer
-        .play('${dir.path}/${index.toString().padLeft(3, '0')}001.mp3');
-    count = 2;
+    await advancedPlayer.play('${dir.path}/001001.mp3');
+    count = index == 1 ? 2 : 1;
   }
 
-  
+  setBookMark(data, lang, sid, ttlayas, aid) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+
+    Map newBookMark = {
+      'lang': lang,
+      'sid': index,
+      'aid': aid,
+      'ttlayas': ttlayas
+    };
+
+    List<Map> bookMarkList = List<Map>();
+    String bookmarks = pref.getString('bookmarks');
+    print(bookmarks);
+    if (bookmarks == null) {
+      bookMarkList.add(newBookMark);
+      String bookmarkArray = json.encode(bookMarkList);
+      pref.setString('bookmarks', bookmarkArray);
+    } else {
+      var jsonResp = json.decode(bookmarks);
+      var inBookmark = false;
+      jsonResp.forEach((bookmark) {
+        if (inBookmark == false &&
+            newBookMark['sid'] == bookmark['sid'] &&
+            newBookMark['aid'] == bookmark['aid'] &&
+            newBookMark['aid'] == bookmark['lang']) {
+          inBookmark = true;
+        } else {
+          bookMarkList.add(bookmark);
+        }
+      });
+      bookMarkList.add(newBookMark);
+
+      pref.setString('bookmarks', json.encode(bookMarkList));
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -125,15 +175,18 @@ class _SuraDetailState extends State<SuraDetail> {
   selectedLang(AsyncSnapshot snapshot, int index) {
     switch (lang) {
       case 'bangla':
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-          child: Text(
-            snapshot.data[index].banglaText,
-            style: TextStyle(
-              fontSize: 15.0,
-              color: Color(0xff0b4703),
+        return Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 2, 20, 2),
+              child: Text(
+                snapshot.data[index].banglaText,
+                style: TextStyle(
+                  fontSize: 15.0,
+                ),
+              ),
             ),
-          ),
+          ],
         );
       case 'original':
         return Container();
@@ -159,9 +212,11 @@ class _SuraDetailState extends State<SuraDetail> {
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              count = 0;
+              //count = 0;
+
+              isPlaying = false;
               advancedPlayer.stop();
-              advancedPlayer.release();
+              advancedPlayer = null;
               Navigator.pop(context);
             }),
         title: Center(
@@ -172,16 +227,23 @@ class _SuraDetailState extends State<SuraDetail> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.play_arrow),
-            onPressed: play,
+            onPressed: () {
+              if (!isPlaying) {
+                play();
+                isPlaying = true;
+              }
+            },
           ),
           IconButton(
             icon: Icon(Icons.pause),
-            onPressed: (){
-              if(pause ==  false){
-                pause=true;
+            onPressed: () {
+              if (pause == false) {
+                pause = true;
+
                 advancedPlayer.pause();
-              }else{
-                pause=false;
+              } else {
+                pause = false;
+                isPlaying = false;
                 advancedPlayer.resume();
               }
             },
@@ -190,59 +252,95 @@ class _SuraDetailState extends State<SuraDetail> {
             icon: Icon(Icons.stop),
             onPressed: () {
               count = 0;
+              isPlaying = true;
               advancedPlayer.stop();
             },
           ),
         ],
       ),
+      bottomNavigationBar: BottomAppBar(
+        child: Visibility(
+          visible: isDownload,
+          child: Container(
+            decoration: BoxDecoration(color: Colors.green),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                SizedBox(
+                  height: 12,
+                  child: LinearProgressIndicator(
+                    value: parsentage,
+                    backgroundColor: Colors.black87,
+                    valueColor: AlwaysStoppedAnimation(Colors.red),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(20.0, 4, 4, 10),
+                  child: Text(
+                    'Completed..$progress %',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: Container(
-        child: FutureBuilder(
-          future: loadSuraDetail(data),
-          builder: (BuildContext ctx, AsyncSnapshot snapshot) {
-            if (!snapshot.hasData || snapshot.data.isEmpty) {
-              return Center(child: CircularProgressIndicator());
-            } else {
-              return ScrollablePositionedList.builder(
+        child: SizedBox(
+          child: FutureBuilder(
+            future: loadSuraDetail(data),
+            builder: (BuildContext ctx, AsyncSnapshot snapshot) {
+              if (!snapshot.hasData || snapshot.data.isEmpty) {
+                return Center(child: CircularProgressIndicator());
+              } else {
+                return ScrollablePositionedList.builder(
+                  scrollDirection: Axis.vertical,
                   itemCount: snapshot.data.length,
                   itemScrollController: itemScrollController,
                   itemPositionsListener: itemPositionsListener,
                   itemBuilder: (BuildContext ctx, int index) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: <Widget>[
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          child: Text(
-                            snapshot.data[index].quranText,
-                            style: TextStyle(
-                                fontSize: 30.0,
-                                /* color: snapshot.data[index].active ?  Colors.orangeAccent:Color(0xff0b4703), */
-                                color: active[index]
-                                    ? Colors.orangeAccent
-                                    : Color(0xff0b4703)),
-                            textDirection: TextDirection.rtl,
-                          ),
-                        ),
-                        selectedLang(snapshot, index),
-                        /* Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                          child: Text(
-                            snapshot.data[index].banglaText,
-                            style: TextStyle(
-                              fontSize: 15.0,
-                              color: Color(0xff0b4703),
+                    return Material(
+                      color: active[index] ? Color(0xffededf4) : Colors.white,
+                      child: InkWell(
+                        /*  highlightColor: Theme.of(context).primaryColor, */
+                        splashColor: Theme.of(context).primaryColor,
+                        onLongPress: () {
+                          setBookMark(data, lang, this.index, ttlayas, index);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 1,
+                              color: Colors.indigo[100],
                             ),
                           ),
-                        ),*/
-                        Divider(
-                          thickness: 1,
-                        )
-                      ],
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                                child: Text(
+                                  snapshot.data[index].quranText,
+                                  style: TextStyle(
+                                    fontSize: 30.0,
+                                  ),
+                                  textDirection: TextDirection.rtl,
+                                ),
+                              ),
+                              selectedLang(snapshot, index),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
-                  });
-            }
-          },
+                  },
+                );
+              }
+            },
+          ),
         ),
       ),
     );
