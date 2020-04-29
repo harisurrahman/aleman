@@ -130,19 +130,19 @@ class _SuraDetailState extends State<SuraDetail> {
     count = index == 1 ? 2 : 1;
   }
 
-  setBookMark(data, lang, sid, ttlayas, aid) async {
+  setBookMark(data, lang, sid, ttlayas, aid, name) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-
+    pref.remove('bookmarks');
     Map newBookMark = {
       'lang': lang,
       'sid': index,
       'aid': aid,
-      'ttlayas': ttlayas
+      'ttlayas': ttlayas,
+      'name': name
     };
 
     List<Map> bookMarkList = List<Map>();
     String bookmarks = pref.getString('bookmarks');
-    print(bookmarks);
     if (bookmarks == null) {
       bookMarkList.add(newBookMark);
       String bookmarkArray = json.encode(bookMarkList);
@@ -306,7 +306,7 @@ class _SuraDetailState extends State<SuraDetail> {
                         /*  highlightColor: Theme.of(context).primaryColor, */
                         splashColor: Theme.of(context).primaryColor,
                         onLongPress: () {
-                          setBookMark(data, lang, this.index, ttlayas, index);
+                          setBookMark(data, lang, this.index, ttlayas, index+1, name);
                         },
                         child: Container(
                           decoration: BoxDecoration(

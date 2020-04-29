@@ -50,14 +50,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (context) => SuraDetail(
-                                    data:
-                                        'assets/quran/sura-${(index + 1).toString()}.json',
-                                    name: snapshot.data[index].name,
-                                    lang: 'original',
-                                    index: snapshot.data[index].englishNumber,
-                                    ttlayas: int.parse(snapshot
-                                        .data[index].numberEnglishAyahs))),
+                              builder: (context) => SuraDetail(
+                                  data:
+                                      'assets/quran/sura-${(index + 1).toString()}.json',
+                                  name: snapshot.data[index].name,
+                                  lang: 'original',
+                                  index: snapshot.data[index].englishNumber,
+                                  ttlayas: int.parse(
+                                    snapshot.data[index].numberEnglishAyahs,
+                                  )),
+                            ),
                           );
                           //print(index);
                         },
@@ -93,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 builder: (context) => SuraDetail(
                                     data:
                                         'assets/quran/sura-${(index + 1).toString()}.json',
-                                    name: snapshot.data[index].name,
+                                    name: snapshot.data[index].banglaName,
                                     lang: 'bangla',
                                     index: snapshot.data[index].englishNumber,
                                     ttlayas: int.parse(snapshot
@@ -129,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 builder: (context) => SuraDetail(
                                     data:
                                         'assets/quran/sura-${(index + 1).toString()}.json',
-                                    name: snapshot.data[index].name,
+                                    name: snapshot.data[index].englishName,
                                     lang: 'english',
                                     index: snapshot.data[index].englishNumber,
                                     ttlayas: int.parse(snapshot

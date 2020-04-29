@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'bookmarks.dart';
 
 class MainDrawer extends StatefulWidget {
   MainDrawer({Key key}) : super(key: key);
@@ -32,6 +33,13 @@ class _MainDrawerState extends State<MainDrawer> {
               ),
             )),
         ListTile(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Bookmarks(),
+              ),
+            );
+          },
           leading: Icon(
             Icons.bookmark,
             color: Theme.of(context).primaryColor,
@@ -42,6 +50,45 @@ class _MainDrawerState extends State<MainDrawer> {
             alignment: Alignment(-1.2, 0),
           ),
         ),
+        Divider(height: 2, color: Theme.of(context).primaryColor,),
+        ListTile(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Bookmarks(),
+              ),
+            );
+          },
+          leading: Icon(
+            Icons.colorize,
+            color: Theme.of(context).primaryColor,
+            size: 30,
+          ),
+          title: Align(
+            child: new Text('Color Theme'),
+            alignment: Alignment(-1.2, 0),
+          ),
+        ),
+        Divider(height: 2, color: Theme.of(context).primaryColor,),
+        ListTile(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Bookmarks(),
+              ),
+            );
+          },
+          leading: Icon(
+            Icons.colorize,
+            color: Theme.of(context).primaryColor,
+            size: 30,
+          ),
+          title: Align(
+            child: new Text('Reciter'),
+            alignment: Alignment(-1.2, 0),
+          ),
+        ),
+        Divider(height: 2, color: Theme.of(context).primaryColor,),
       ],
     );
   }
@@ -49,9 +96,9 @@ class _MainDrawerState extends State<MainDrawer> {
 
 getBookmarks() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  
+
   //bookmarks.add(jsonEncode(a));
   prefs.remove('SuraIndex');
-   //String bookbarks = prefs.getString('SuraIndex');
-  //print(bookbarks); 
+  //String bookbarks = prefs.getString('SuraIndex');
+  //print(bookbarks);
 }
