@@ -1,4 +1,4 @@
-import 'package:aleman/main_drawer.dart';
+
 
 import './custom_card.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'dto/bottom_navigation.dart';
 import 'dto/load_sura_list.dart';
 import './sura_detail.dart';
 import 'main_drawer.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -154,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    getBookmarks();
+    //getBookmarks();
   }
 
   @override

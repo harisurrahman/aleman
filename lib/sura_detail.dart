@@ -15,6 +15,7 @@ class SuraDetail extends StatefulWidget {
   final String lang;
   final int index;
   final int ttlayas;
+  final int bookmarkAid;
 
   SuraDetail(
       {Key key,
@@ -22,12 +23,13 @@ class SuraDetail extends StatefulWidget {
       this.name,
       this.lang,
       this.index,
-      this.ttlayas})
+      this.ttlayas,
+      this.bookmarkAid})
       : super(key: key);
 
   @override
   _SuraDetailState createState() =>
-      _SuraDetailState(data, name, lang, index, ttlayas);
+      _SuraDetailState(data, name, lang, index, ttlayas, bookmarkAid);
 }
 
 class _SuraDetailState extends State<SuraDetail> {
@@ -36,8 +38,10 @@ class _SuraDetailState extends State<SuraDetail> {
   final String lang;
   final int index;
   final int ttlayas;
+  final int bookmarkAid;
 
-  _SuraDetailState(this.data, this.name, this.lang, this.index, this.ttlayas);
+  _SuraDetailState(this.data, this.name, this.lang, this.index, this.ttlayas,
+      this.bookmarkAid);
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
@@ -63,17 +67,25 @@ class _SuraDetailState extends State<SuraDetail> {
       active.add(false);
     }
 
+    if (bookmarkAid != null) {
+      resumePlay();
+    }
+
     advancedPlayer.onPlayerStateChanged.listen((s) {
+      print(dir.path);
       if (s == AudioPlayerState.COMPLETED && count <= ttlayas) {
         advancedPlayer.play(
             '${dir.path}/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
         count++;
         setState(() {
+          //active.forEach((f){f=false;});
           active[count - 2] = true;
+         //active[count] = true;
           active[count - 3] = false;
         });
+        
         itemScrollController.scrollTo(
-            index: (count - 2),
+            index: (count+2),
             duration: Duration(seconds: 2),
             curve: Curves.easeInOutCubic);
       }
@@ -116,23 +128,50 @@ class _SuraDetailState extends State<SuraDetail> {
     isDownload = false;
   }
 
+  resumePlay() async {
+    Future.delayed(Duration(seconds: 1), (){
+       for (int i = 1; i < ttlayas; i++) {
+      active[i] = false;
+    } 
+     setState(() {
+       active[bookmarkAid-1] = true;
+    });
+       itemScrollController.scrollTo(
+            index: bookmarkAid,
+            duration: Duration(seconds: 2),
+            curve: Curves.easeInOutCubic); 
+
+    });
+    
+  }
+
   play() async {
     for (int i = 1; i < ttlayas; i++) {
       active[i] = false;
     }
-    count = 0;
-    setState(() {
-      isPlaying = true;
-      active[count] = true;
-    });
+  
     await this.dowloadAyas();
-    await advancedPlayer.play('${dir.path}/001001.mp3');
-    count = index == 1 ? 2 : 1;
+
+    if(bookmarkAid != null){
+      count = bookmarkAid;
+      await advancedPlayer.play('${dir.path}/${index.toString().padLeft(3,'0')}${(count).toString().padLeft(3,'0')}.mp3');
+      setState(() {
+        active[count-1] = true;
+      });
+      count = count + 1;
+    }else{
+      count = index == 1 ? 2 : 1;
+      await advancedPlayer.play('${dir.path}/001001.mp3');
+      setState(() {
+      active[count-count] = true;
+    });
+    }
+    
   }
 
   setBookMark(data, lang, sid, ttlayas, aid, name) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.remove('bookmarks');
+    //pref.remove('bookmarks');
     Map newBookMark = {
       'lang': lang,
       'sid': index,
@@ -154,7 +193,7 @@ class _SuraDetailState extends State<SuraDetail> {
         if (inBookmark == false &&
             newBookMark['sid'] == bookmark['sid'] &&
             newBookMark['aid'] == bookmark['aid'] &&
-            newBookMark['aid'] == bookmark['lang']) {
+            newBookMark['lang'] == bookmark['lang']) {
           inBookmark = true;
         } else {
           bookMarkList.add(bookmark);
@@ -306,7 +345,8 @@ class _SuraDetailState extends State<SuraDetail> {
                         /*  highlightColor: Theme.of(context).primaryColor, */
                         splashColor: Theme.of(context).primaryColor,
                         onLongPress: () {
-                          setBookMark(data, lang, this.index, ttlayas, index+1, name);
+                          setBookMark(
+                              data, lang, this.index, ttlayas, index + 1, name);
                         },
                         child: Container(
                           decoration: BoxDecoration(
