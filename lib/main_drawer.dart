@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'commonFunctions.dart';
+import 'sura_detail.dart';
+import 'color_theme.dart';
 
 class MainDrawer extends StatefulWidget {
   MainDrawer({Key key}) : super(key: key);
@@ -15,12 +17,14 @@ class _MainDrawerState extends State<MainDrawer> {
   Stream _stream;
   bool _showContent = false;
   int totalAyas = 0;
+  List<Map> _bookMarks = List<Map>();
 
   @override
   void initState() {
     _streamController = StreamController();
     _stream = _streamController.stream;
     getBookMarks().then((resp) {
+      _bookMarks.addAll(resp);
       _streamController.add(resp);
       setState(() {
         totalAyas = resp.length;
@@ -29,14 +33,18 @@ class _MainDrawerState extends State<MainDrawer> {
     super.initState();
   }
 
-  removeBookMarkItem(int index) async {
-    List<Map> resp = await getBookMarks();
-    resp.removeAt(index);
-    await removeBookMark(resp);
-    _streamController.add(resp);
+  @override
+  void dispose() {
+    _streamController.close();
+    super.dispose();
+  }
 
+  removeBookMarkItem(int index) async {
+    _bookMarks.removeAt(index);
+    if (_bookMarks.length >= 0) _streamController.add(_bookMarks);
+    await removeBookMark(_bookMarks);
     setState(() {
-      totalAyas = resp.length;
+      totalAyas = _bookMarks.length;
     });
   }
 
@@ -74,7 +82,7 @@ class _MainDrawerState extends State<MainDrawer> {
               splashColor: Theme.of(context).primaryColor,
               onTap: () {
                 setState(() {
-                  _showContent = !_showContent;
+                  if (totalAyas > 0) _showContent = !_showContent;
                 });
               },
               child: Heading(
@@ -90,7 +98,7 @@ class _MainDrawerState extends State<MainDrawer> {
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (!snapshot.hasData || snapshot.data.isEmpty) {
                     return Center(
-                      child: CircularProgressIndicator(),
+                      child: Container(),
                     );
                   } else {
                     return ListView.builder(
@@ -100,42 +108,58 @@ class _MainDrawerState extends State<MainDrawer> {
                       itemBuilder: (BuildContext ctx, int index) {
                         return Column(
                           children: <Widget>[
-                            ListTile(
-                              title: Padding(
-                                padding: const EdgeInsets.only(left: 20.0),
-                                child: Wrap(
-                                  textDirection:
-                                      textDirection(snapshot.data[index]),
-                                  children: <Widget>[
-                                    Text(
-                                      snapshot.data[index]['name'],
-                                      style: TextStyle(
-                                        fontSize: selectFontSize(
-                                            snapshot.data[index]),
-                                        fontWeight: selectFontWeight(
-                                            snapshot.data[index]),
+                            InkWell(
+                              splashColor: Theme.of(context).primaryColor,
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => SuraDetail(
+                                    data:
+                                        'assets/quran/sura-${(snapshot.data[index]['sid']).toString()}.json',
+                                    name: snapshot.data[index]['name'],
+                                    lang: snapshot.data[index]['lang'],
+                                    index: snapshot.data[index]['sid'],
+                                    ttlayas: snapshot.data[index]['ttlayas'],
+                                    bookmarkAid: snapshot.data[index]['aid'],
+                                  ),
+                                ),
+                              ),
+                              child: ListTile(
+                                title: Padding(
+                                  padding: const EdgeInsets.only(left: 20.0),
+                                  child: Wrap(
+                                    spacing: 2.0,
+                                    textDirection:
+                                        textDirection(snapshot.data[index]),
+                                    children: <Widget>[
+                                      Text(
+                                        snapshot.data[index]['name'],
+                                        style: TextStyle(
+                                          fontSize: selectFontSize(
+                                              snapshot.data[index]),
+                                          fontWeight: selectFontWeight(
+                                              snapshot.data[index]),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          10, 0, 10, 0),
-                                      child: CircleAvatar(
+                                      CircleAvatar(
                                         backgroundColor: Colors.white,
                                         backgroundImage: AssetImage(
                                             "assets/images/ayetNo.png"),
-                                        child: Text(getNumsAsLang(
-                                            context, snapshot, index)),
+                                        child: Text(
+                                          getNumsAsLang(
+                                              snapshot.data[index]['lang'],
+                                              snapshot.data[index]['aid']),
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(Icons.delete),
-                                color: Colors.red,
-                                onPressed: () {
-                                  removeBookMarkItem(index);
-                                },
+                                trailing: IconButton(
+                                  icon: Icon(Icons.delete),
+                                  color: Colors.red,
+                                  onPressed: () {
+                                    removeBookMarkItem(index);
+                                  },
+                                ),
                               ),
                             ),
                             Divider(
@@ -151,10 +175,14 @@ class _MainDrawerState extends State<MainDrawer> {
                 },
               ),
             ),
-            Heading(
-              headingText: 'Theme Color',
-              iconsName: Icons.colorize,
-              ttlAyas: 0,
+            InkWell(
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => ColorThemes())),
+              child: Heading(
+                headingText: 'Theme Color',
+                iconsName: Icons.colorize,
+                ttlAyas: 0,
+              ),
             ),
             Heading(
               headingText: 'Preferences',

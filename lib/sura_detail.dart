@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'commonFunctions.dart';
 
 class SuraDetail extends StatefulWidget {
   final String data;
@@ -72,20 +73,17 @@ class _SuraDetailState extends State<SuraDetail> {
     }
 
     advancedPlayer.onPlayerStateChanged.listen((s) {
-      print(dir.path);
       if (s == AudioPlayerState.COMPLETED && count <= ttlayas) {
         advancedPlayer.play(
             '${dir.path}/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
         count++;
         setState(() {
-          //active.forEach((f){f=false;});
           active[count - 2] = true;
-         //active[count] = true;
           active[count - 3] = false;
         });
-        
+
         itemScrollController.scrollTo(
-            index: (count+2),
+            index: (count - 2),
             duration: Duration(seconds: 2),
             curve: Curves.easeInOutCubic);
       }
@@ -129,44 +127,46 @@ class _SuraDetailState extends State<SuraDetail> {
   }
 
   resumePlay() async {
-    Future.delayed(Duration(seconds: 1), (){
-       for (int i = 1; i < ttlayas; i++) {
-      active[i] = false;
-    } 
-     setState(() {
-       active[bookmarkAid-1] = true;
+    Future.delayed(Duration(seconds: 1), () {
+      for (int i = 1; i < ttlayas; i++) {
+        active[i] = false;
+      }
+      setState(() {
+        active[bookmarkAid - 1] = true;
+      });
+      count = bookmarkAid - 1;
+      itemScrollController.scrollTo(
+          index: bookmarkAid - 1,
+          duration: Duration(seconds: 2),
+          curve: Curves.easeInOutCubic);
     });
-       itemScrollController.scrollTo(
-            index: bookmarkAid,
-            duration: Duration(seconds: 2),
-            curve: Curves.easeInOutCubic); 
-
-    });
-    
   }
 
   play() async {
     for (int i = 1; i < ttlayas; i++) {
       active[i] = false;
     }
-  
+
     await this.dowloadAyas();
 
-    if(bookmarkAid != null){
+    if (bookmarkAid != null) {
       count = bookmarkAid;
-      await advancedPlayer.play('${dir.path}/${index.toString().padLeft(3,'0')}${(count).toString().padLeft(3,'0')}.mp3');
-      setState(() {
-        active[count-1] = true;
+      await advancedPlayer
+          .play(
+              '${dir.path}/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
+          .then((onValue) {
+        setState(() {
+          active[count - 1] = true;
+        });
+        count = count + 1;
       });
-      count = count + 1;
-    }else{
+    } else {
       count = index == 1 ? 2 : 1;
       await advancedPlayer.play('${dir.path}/001001.mp3');
       setState(() {
-      active[count-count] = true;
-    });
+        active[count - count] = true;
+      });
     }
-    
   }
 
   setBookMark(data, lang, sid, ttlayas, aid, name) async {
@@ -349,6 +349,7 @@ class _SuraDetailState extends State<SuraDetail> {
                               data, lang, this.index, ttlayas, index + 1, name);
                         },
                         child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
                               width: 1,
@@ -362,12 +363,28 @@ class _SuraDetailState extends State<SuraDetail> {
                               Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                                child: Text(
-                                  snapshot.data[index].quranText,
-                                  style: TextStyle(
-                                    fontSize: 30.0,
-                                  ),
+                                child: Wrap(
                                   textDirection: TextDirection.rtl,
+                                  children: <Widget>[
+                                    Text(
+                                      snapshot.data[index].quranText.trim(),
+                                      style: TextStyle(
+                                        fontSize: 25.0,
+                                      ),
+                                      textDirection: TextDirection.rtl,
+                                    ),
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      backgroundImage: AssetImage(
+                                          "assets/images/ayetNo.png"),
+                                      child: Text(
+                                        
+                                        getNumsAsLang(lang, index + 1),
+                                        style: TextStyle(color: Colors.black),
+                                        /* style: TextStyle(fontSize: ), */
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               selectedLang(snapshot, index),

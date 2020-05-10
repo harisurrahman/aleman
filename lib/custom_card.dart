@@ -154,10 +154,10 @@ _otherLang(snapshot, int index, int lang) {
 _getAyahsNumber(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
-      return 'الآيات ${snapshot.data[index].numberOfAyahs}';
+      return 'الآيات ${snapshot.data[index].numberEnglishAyahs.toString().withPersianNumbers()}';
       break;
     case 1:
-      return 'আয়াত ${snapshot.data[index].numberBanglaAyahs}';
+      return 'আয়াত ${snapshot.data[index].numberEnglishAyahs.toString().withBanglaNumbers()}';
       break;
     case 2:
       return 'Ayahs ${snapshot.data[index].numberEnglishAyahs}';

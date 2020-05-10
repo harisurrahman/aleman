@@ -1,34 +1,50 @@
-
-
+import 'package:provider/provider.dart';
 import './custom_card.dart';
 import 'package:flutter/material.dart';
 import 'dto/bottom_navigation.dart';
 import 'dto/load_sura_list.dart';
 import './sura_detail.dart';
 import 'main_drawer.dart';
+import 'theme.dart';
 
+void main()=>runApp(MyApp());
 
-void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return ChangeNotifierProvider<ThemeChanger>(
+      create: (_) => ThemeChanger(themes[1]),
+      child: MaterialAppWithTheme(),
+    );
+  }
+
+  MaterialApp buildMaterialAppWithTheme() {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: MyHomePage(),
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MaterialAppWithTheme extends StatelessWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  Widget build(BuildContext context) {
+    final _currentTheme = Provider.of<ThemeChanger>(context);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+      theme: _currentTheme.getTheme(),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-//this is a comment
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   int _selectedPage = 0;
   String _currentLang = 'الإيمان';
 
@@ -46,8 +62,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Column(
                   children: <Widget>[
                     Material(
-                      color: Colors.transparent,
+                      /* color: Colors.transparent, */
                       child: InkWell(
+                        splashColor: Theme.of(context).primaryColor,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -85,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Column(
                   children: <Widget>[
                     Material(
-                      color: Colors.transparent,
+                      /* color: Colors.transparent, */
                       child: InkWell(
                         /* onLongPress: () {
                           bookMarkSura(/* (index, snapshot.data[index].name */);
@@ -93,14 +110,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (context) => SuraDetail(
-                                    data:
-                                        'assets/quran/sura-${(index + 1).toString()}.json',
-                                    name: snapshot.data[index].banglaName,
-                                    lang: 'bangla',
-                                    index: snapshot.data[index].englishNumber,
-                                    ttlayas: int.parse(snapshot
-                                        .data[index].numberEnglishAyahs))),
+                              builder: (context) => SuraDetail(
+                                data:
+                                    'assets/quran/sura-${(index + 1).toString()}.json',
+                                name: snapshot.data[index].banglaName,
+                                lang: 'bangla',
+                                index: snapshot.data[index].englishNumber,
+                                ttlayas: int.parse(
+                                    snapshot.data[index].numberEnglishAyahs),
+                              ),
+                            ),
                           );
                         },
                         child: CustomCard(snapshot, index, _index),
@@ -124,19 +143,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Column(
                   children: <Widget>[
                     Material(
-                      color: Colors.transparent,
+                      /* color: Colors.transparent, */
                       child: InkWell(
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (context) => SuraDetail(
-                                    data:
-                                        'assets/quran/sura-${(index + 1).toString()}.json',
-                                    name: snapshot.data[index].englishName,
-                                    lang: 'english',
-                                    index: snapshot.data[index].englishNumber,
-                                    ttlayas: int.parse(snapshot
-                                        .data[index].numberEnglishAyahs))),
+                              builder: (context) => SuraDetail(
+                                data:
+                                    'assets/quran/sura-${(index + 1).toString()}.json',
+                                name: snapshot.data[index].englishName,
+                                lang: 'english',
+                                index: snapshot.data[index].englishNumber,
+                                ttlayas: int.parse(
+                                    snapshot.data[index].numberEnglishAyahs),
+                              ),
+                            ),
                           );
                         },
                         child: CustomCard(snapshot, index, _index),
@@ -153,12 +174,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    //getBookmarks();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -172,8 +187,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: MainDrawer(),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.indigo,
-        selectedItemColor: Colors.white,
+        backgroundColor: Theme.of(context).primaryColor,
+        selectedItemColor: Colors.yellowAccent,
+        unselectedItemColor: Colors.white,
         currentIndex: _selectedPage,
         onTap: (int index) {
           setState(() {

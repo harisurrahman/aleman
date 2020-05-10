@@ -3,19 +3,19 @@ import 'package:persian/persian.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 
-String getNumsAsLang(BuildContext context, AsyncSnapshot snapshot, int index) {
-  switch (snapshot.data[index]['lang']) {
+String getNumsAsLang(lang, index) {
+  switch (lang) {
     case 'bangla':
-      return snapshot.data[index]['aid'].toString().withBanglaNumbers();
+      return index.toString().withBanglaNumbers();
     case 'original':
-      return snapshot.data[index]['aid'].toString().withPersianNumbers();
+      return index.toString().withPersianNumbers();
     default:
-      return snapshot.data[index]['aid'].toString();
+      return index.toString();
   }
 }
 
 double selectFontSize(Map snapshot) {
-  return (snapshot['lang'] == 'original') ? 25 : 20;
+  return (snapshot['lang'] == 'original') ? 23 : 20;
 }
 
 FontWeight selectFontWeight(Map snapshot) {
