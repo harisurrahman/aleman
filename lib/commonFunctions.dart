@@ -30,20 +30,18 @@ Future<List<Map>> getBookMarks() async {
   List<Map> listOfBookmarks = List<Map>();
   SharedPreferences pref = await SharedPreferences.getInstance();
   String bookmarks = pref.getString('bookmarks');
-  var jsonResp = await json.decode(bookmarks);
-  
-  await jsonResp.forEach((bookmark) async {
-    listOfBookmarks.add(bookmark);
-  });
+  if (bookmarks != null) {
+    var jsonResp = await json.decode(bookmarks);
+    await jsonResp.forEach((bookmark) async {
+      listOfBookmarks.add(bookmark);
+    });
+  }
 
   return listOfBookmarks;
 }
 
-removeBookMark(List<Map> bookmarks)async{
+removeBookMark(List<Map> bookmarks) async {
   String bookmarkString = json.encode(bookmarks);
   SharedPreferences pref = await SharedPreferences.getInstance();
   pref.setString('bookmarks', bookmarkString);
 }
-
-
-

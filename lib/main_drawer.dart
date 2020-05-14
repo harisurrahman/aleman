@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'commonFunctions.dart';
 import 'sura_detail.dart';
@@ -24,11 +23,13 @@ class _MainDrawerState extends State<MainDrawer> {
     _streamController = StreamController();
     _stream = _streamController.stream;
     getBookMarks().then((resp) {
-      _bookMarks.addAll(resp);
-      _streamController.add(resp);
-      setState(() {
-        totalAyas = resp.length;
-      });
+      if (resp != null) {
+        _bookMarks.addAll(resp);
+        _streamController.add(resp);
+        setState(() {
+          totalAyas = resp.length;
+        });
+      }
     });
     super.initState();
   }
@@ -148,6 +149,9 @@ class _MainDrawerState extends State<MainDrawer> {
                                           getNumsAsLang(
                                               snapshot.data[index]['lang'],
                                               snapshot.data[index]['aid']),
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -163,7 +167,7 @@ class _MainDrawerState extends State<MainDrawer> {
                               ),
                             ),
                             Divider(
-                              height: 2,
+                              height: 0.2,
                               color: Theme.of(context).primaryColor,
                               indent: 30,
                             ),
@@ -222,9 +226,11 @@ class _HeadingState extends State<Heading> {
             child: new Text(widget.headingText),
             alignment: Alignment(-1.2, 0),
           ),
-          trailing: Badge(
-            totalAyas: widget.ttlAyas.toString(),
-          ),
+          trailing: (widget.ttlAyas > 0)
+              ? Badge(
+                  totalAyas: widget.ttlAyas.toString(),
+                )
+              : null,
         ),
         Divider(
           height: 2,

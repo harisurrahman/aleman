@@ -35,7 +35,9 @@ dependencies:
   dio: any
   path_provider: any
   shared_preferences: ^0.5.7
-  provider: 
+  provider: any
+  archive: any
+
 
 dev_dependencies:
   flutter_test:

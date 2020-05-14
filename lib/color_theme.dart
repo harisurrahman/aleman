@@ -1,7 +1,6 @@
 import 'package:aleman/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
 import 'colorTheme.dart';
 //import 'themeStream.dart';
 
@@ -12,27 +11,22 @@ class ColorThemes extends StatefulWidget {
 
 class _ColorThemesState extends State<ColorThemes> {
   int _selectedRadio = 1;
-  
   @override
   void initState() {
     getColorTheme().then((theme) {
       setState(() {
-        //_currentTheme = theme.color;
-        _selectedRadio = theme.colorIndex;
+        _selectedRadio = theme;
       });
     });
-
     super.initState();
   }
 
-  _setColorState(int selectedTheme) async {
-    setColorTheme(selectedTheme).then((theme) {
-      setState(() {
-        //_currentTheme = theme.color;
 
-        _selectedRadio = theme.colorIndex;
-      });
+  _setColorState(int selectedTheme) async {
+    setState(() {
+      _selectedRadio = selectedTheme;
     });
+    await setColorTheme(selectedTheme);
   }
 
   @override
@@ -54,9 +48,9 @@ class _ColorThemesState extends State<ColorThemes> {
           itemCount: pallets.length,
           itemBuilder: (BuildContext ctx, int index) => Card(
             child: InkWell(
-              onTap: (){
+              onTap: () {
                 _setColorState(pallets[index]['index']);
-                      theme.setTheme(themes[pallets[index]['index']]);
+                theme.setTheme(themes[pallets[index]['index']]);
               },
               child: ListTile(
                 title: Text(pallets[index]['title']),

@@ -1,14 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'dto/load_sura.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'commonFunctions.dart';
+import 'progress_bloc.dart';
 
 class SuraDetail extends StatefulWidget {
   final String data;
@@ -47,29 +48,32 @@ class _SuraDetailState extends State<SuraDetail> {
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
   int count = 0;
-  bool pause = false;
-  bool isDownload = false;
-  String progress = '0';
-  double parsentage = 0;
-  final baseUrl = 'http://www.everyayah.com/data/Abdullah_Basfar_32kbps/';
-  bool isPlaying = false;
-
+  bool _pause = false;
+  bool _isPlaying = false;
+  bool exists = false;
+  ProgressBloc _bloc;
   AudioPlayer advancedPlayer = AudioPlayer();
-
-  //var active = List();
   List<bool> active = [false];
-
   Directory dir;
+
   @override
   void initState() {
     super.initState();
+    _bloc = ProgressBloc();
+    getApplicationDocumentsDirectory().then((dir){
+      File('${dir.path}/001001.mp3').exists().then((exists){
+        if(!exists){
+          _bloc.getSid.add(1);
+        }
+      });
+    });
 
     for (int i = 1; i < ttlayas; i++) {
       active.add(false);
     }
 
     if (bookmarkAid != null) {
-      resumePlay();
+      _resumePlay();
     }
 
     advancedPlayer.onPlayerStateChanged.listen((s) {
@@ -98,35 +102,7 @@ class _SuraDetailState extends State<SuraDetail> {
     });
   }
 
-  dowloadAyas() async {
-    dir = await getApplicationDocumentsDirectory();
-    for (int i = 1; i <= ttlayas; i++) {
-      String sura =
-          '$baseUrl${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3';
-      bool isExists = await File(
-              '${dir.path}/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3')
-          .exists();
-      if (!isExists) {
-        isDownload = true;
-        Dio dio = Dio();
-        try {
-          await dio.download(sura,
-              '${dir.path}/${index.toString().padLeft(3, '0')}${i.toString().padLeft(3, '0')}.mp3',
-              onReceiveProgress: (rec, ttl) {
-            setState(() {
-              progress = ((i / ttlayas) * 100).toStringAsFixed(0);
-              parsentage = (((i / ttlayas) * 100) / 100);
-            });
-          });
-        } catch (err) {
-          print(err);
-        }
-      }
-    }
-    isDownload = false;
-  }
-
-  resumePlay() async {
+  _resumePlay() async {
     Future.delayed(Duration(seconds: 1), () {
       for (int i = 1; i < ttlayas; i++) {
         active[i] = false;
@@ -142,13 +118,32 @@ class _SuraDetailState extends State<SuraDetail> {
     });
   }
 
-  play() async {
+  _checkDownloadStatus() async {
+    dir = await getApplicationDocumentsDirectory();
+    String filePath =
+        '${dir.path}/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
+    exists = await File(filePath).exists();
+    if (!exists) {
+      Timer _timer;
+      _timer = Timer.periodic(Duration(seconds: 2), (timer) async {
+        bool exists = await File(filePath).exists();
+        if (exists) {
+          await _play();
+          _timer.cancel();
+        }
+      });
+    } else {
+      _play();
+    }
+  }
+
+  _play() async {
     for (int i = 1; i < ttlayas; i++) {
       active[i] = false;
     }
+    //await dowloadAyas();
 
-    await this.dowloadAyas();
-
+    //dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
       await advancedPlayer
@@ -162,6 +157,7 @@ class _SuraDetailState extends State<SuraDetail> {
       });
     } else {
       count = index == 1 ? 2 : 1;
+      //print('${dir.path}/001001.mp3');
       await advancedPlayer.play('${dir.path}/001001.mp3');
       setState(() {
         active[count - count] = true;
@@ -208,6 +204,7 @@ class _SuraDetailState extends State<SuraDetail> {
   @override
   void dispose() {
     super.dispose();
+    _bloc.dispose();
     advancedPlayer = null;
   }
 
@@ -253,7 +250,7 @@ class _SuraDetailState extends State<SuraDetail> {
             onPressed: () {
               //count = 0;
 
-              isPlaying = false;
+              _isPlaying = false;
               advancedPlayer.stop();
               advancedPlayer = null;
               Navigator.pop(context);
@@ -267,22 +264,24 @@ class _SuraDetailState extends State<SuraDetail> {
           IconButton(
             icon: Icon(Icons.play_arrow),
             onPressed: () {
-              if (!isPlaying) {
-                play();
-                isPlaying = true;
+              if (!_isPlaying) {
+                _bloc.getSid.add(index);
+                //play();
+                _checkDownloadStatus();
+                _isPlaying = true;
               }
             },
           ),
           IconButton(
             icon: Icon(Icons.pause),
             onPressed: () {
-              if (pause == false) {
-                pause = true;
+              if (_pause == false) {
+                _pause = true;
 
                 advancedPlayer.pause();
               } else {
-                pause = false;
-                isPlaying = false;
+                _pause = false;
+                _isPlaying = false;
                 advancedPlayer.resume();
               }
             },
@@ -291,39 +290,48 @@ class _SuraDetailState extends State<SuraDetail> {
             icon: Icon(Icons.stop),
             onPressed: () {
               count = 0;
-              isPlaying = true;
+              _isPlaying = false;
               advancedPlayer.stop();
             },
           ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Visibility(
-          visible: isDownload,
-          child: Container(
-            decoration: BoxDecoration(color: Colors.green),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                SizedBox(
-                  height: 12,
-                  child: LinearProgressIndicator(
-                    value: parsentage,
-                    backgroundColor: Colors.black87,
-                    valueColor: AlwaysStoppedAnimation(Colors.red),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.fromLTRB(20.0, 4, 4, 10),
-                  child: Text(
-                    'Completed..$progress %',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: StreamBuilder<bool>(
+            initialData: false,
+            stream: _bloc.getVisibilityStreamController,
+            builder: (ctx, vsnap) {
+              return Visibility(
+                visible: vsnap.data,
+                child: StreamBuilder<double>(
+                    stream: _bloc.getProgressStreamController,
+                    initialData: 0,
+                    builder: (context, snapshot) {
+                      return Container(
+                        decoration: BoxDecoration(color: Colors.green),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            SizedBox(
+                                height: 12,
+                                child: LinearProgressIndicator(
+                                  value: (snapshot.data) / 100,
+                                  backgroundColor: Colors.black87,
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.red),
+                                )),
+                            Container(
+                                padding: EdgeInsets.fromLTRB(20.0, 4, 4, 10),
+                                child: Text(
+                                  'Completed..% ${((snapshot.data)).toStringAsFixed(0)}',
+                                )),
+                          ],
+                        ),
+                      );
+                    }),
+              );
+            }),
       ),
       body: Container(
         child: SizedBox(
@@ -352,8 +360,8 @@ class _SuraDetailState extends State<SuraDetail> {
                           padding: EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              width: 1,
-                              color: Colors.indigo[100],
+                              width: 0.3,
+                              color: Theme.of(context).primaryColor,
                             ),
                           ),
                           child: Column(
@@ -363,22 +371,26 @@ class _SuraDetailState extends State<SuraDetail> {
                               Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                                child: Wrap(
+                                child: Flex(
+                                  direction: Axis.horizontal,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   textDirection: TextDirection.rtl,
                                   children: <Widget>[
-                                    Text(
-                                      snapshot.data[index].quranText.trim(),
-                                      style: TextStyle(
-                                        fontSize: 25.0,
+                                    Flexible(
+                                      fit: FlexFit.tight,
+                                      child: Text(
+                                        snapshot.data[index].quranText.trim(),
+                                        style: TextStyle(
+                                          fontSize: 25.0,
+                                        ),
+                                        textDirection: TextDirection.rtl,
                                       ),
-                                      textDirection: TextDirection.rtl,
                                     ),
                                     CircleAvatar(
                                       backgroundColor: Colors.white,
                                       backgroundImage: AssetImage(
                                           "assets/images/ayetNo.png"),
                                       child: Text(
-                                        
                                         getNumsAsLang(lang, index + 1),
                                         style: TextStyle(color: Colors.black),
                                         /* style: TextStyle(fontSize: ), */
