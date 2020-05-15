@@ -114,8 +114,8 @@ class _MainDrawerState extends State<MainDrawer> {
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => SuraDetail(
-                                    data:
-                                        'assets/quran/sura-${(snapshot.data[index]['sid']).toString()}.json',
+                                    /* data:
+                                        'assets/quran/sura-${(snapshot.data[index]['sid']).toString()}.json', */
                                     name: snapshot.data[index]['name'],
                                     lang: snapshot.data[index]['lang'],
                                     index: snapshot.data[index]['sid'],

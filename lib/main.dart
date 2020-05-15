@@ -1,11 +1,12 @@
 import 'package:provider/provider.dart';
 import './custom_card.dart';
 import 'package:flutter/material.dart';
-import 'dto/bottom_navigation.dart';
-import 'dto/load_sura_list.dart';
+import 'bottom_navigation.dart';
+//import 'dto/load_sura_list.dart';
 import './sura_detail.dart';
 import 'main_drawer.dart';
 import 'theme.dart';
+import 'bloc/sura_list_bloc.dart';
 
 void main()=>runApp(MyApp());
 
@@ -47,11 +48,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedPage = 0;
   String _currentLang = 'الإيمان';
+  SuraListBloc _suraBloc;
 
   Widget _getPage(int _index) {
     List<Widget> pages = [
-      FutureBuilder(
-        future: loadSuraList(),
+      StreamBuilder(
+        stream: _suraBloc.getSuraListStream,
         builder: (BuildContext ctx, AsyncSnapshot snapshot) {
           if (!snapshot.hasData || snapshot.data.isEmpty) {
             return Center(child: CircularProgressIndicator());
@@ -69,8 +71,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                  data:
-                                      'assets/quran/sura-${(index + 1).toString()}.json',
+                                  /* data:
+                                      'assets/quran/sura-${snapshot.data[index].englishNumber.toString()}.json', */
                                   name: snapshot.data[index].name,
                                   lang: 'original',
                                   index: snapshot.data[index].englishNumber,
@@ -90,8 +92,8 @@ class _HomePageState extends State<HomePage> {
             );
         },
       ),
-      FutureBuilder(
-        future: loadSuraList(),
+      StreamBuilder(
+        stream:_suraBloc.getSuraListStream,
         builder: (BuildContext ctx, AsyncSnapshot snapshot) {
           if (!snapshot.hasData || snapshot.data.isEmpty) {
             return Center(child: CircularProgressIndicator());
@@ -111,8 +113,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                data:
-                                    'assets/quran/sura-${(index + 1).toString()}.json',
+                                /* data:
+                                    'assets/quran/sura-${(index + 1).toString()}.json', */
                                 name: snapshot.data[index].banglaName,
                                 lang: 'bangla',
                                 index: snapshot.data[index].englishNumber,
@@ -131,8 +133,8 @@ class _HomePageState extends State<HomePage> {
             );
         },
       ),
-      FutureBuilder(
-        future: loadSuraList(),
+      StreamBuilder(
+        stream: _suraBloc.getSuraListStream,
         builder: (BuildContext ctx, AsyncSnapshot snapshot) {
           if (!snapshot.hasData || snapshot.data.isEmpty) {
             return Center(child: CircularProgressIndicator());
@@ -149,8 +151,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                data:
-                                    'assets/quran/sura-${(index + 1).toString()}.json',
+                                /* data:
+                                    'assets/quran/sura-${(index + 1).toString()}.json', */
                                 name: snapshot.data[index].englishName,
                                 lang: 'english',
                                 index: snapshot.data[index].englishNumber,
@@ -171,6 +173,13 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
     return pages[_index];
+  }
+
+  @override
+  void initState() {
+    _suraBloc = SuraListBloc();
+    
+    super.initState();
   }
 
   @override

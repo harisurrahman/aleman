@@ -2,17 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'dto/load_sura.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'commonFunctions.dart';
-import 'progress_bloc.dart';
+import 'bloc/progress_bloc.dart';
 
 class SuraDetail extends StatefulWidget {
-  final String data;
+  /* final String data; */
   final String name;
   final String lang;
   final int index;
@@ -21,7 +20,7 @@ class SuraDetail extends StatefulWidget {
 
   SuraDetail(
       {Key key,
-      @required this.data,
+      /* @required this.data, */
       this.name,
       this.lang,
       this.index,
@@ -31,18 +30,18 @@ class SuraDetail extends StatefulWidget {
 
   @override
   _SuraDetailState createState() =>
-      _SuraDetailState(data, name, lang, index, ttlayas, bookmarkAid);
+      _SuraDetailState(/* data, */ name, lang, index, ttlayas, bookmarkAid);
 }
 
 class _SuraDetailState extends State<SuraDetail> {
-  final String data;
+  /* final String data; */
   final String name;
   final String lang;
   final int index;
   final int ttlayas;
   final int bookmarkAid;
 
-  _SuraDetailState(this.data, this.name, this.lang, this.index, this.ttlayas,
+  _SuraDetailState(/* this.data, */ this.name, this.lang, this.index, this.ttlayas,
       this.bookmarkAid);
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
@@ -60,6 +59,8 @@ class _SuraDetailState extends State<SuraDetail> {
   void initState() {
     super.initState();
     _bloc = ProgressBloc();
+    _bloc.getSuraAyesAid.add(index);
+    /* if Sura faathia not nownload download now */
     getApplicationDocumentsDirectory().then((dir){
       File('${dir.path}/001001.mp3').exists().then((exists){
         if(!exists){
@@ -165,7 +166,7 @@ class _SuraDetailState extends State<SuraDetail> {
     }
   }
 
-  setBookMark(data, lang, sid, ttlayas, aid, name) async {
+  setBookMark(lang, sid, ttlayas, aid, name) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     //pref.remove('bookmarks');
     Map newBookMark = {
@@ -308,7 +309,7 @@ class _SuraDetailState extends State<SuraDetail> {
                     initialData: 0,
                     builder: (context, snapshot) {
                       return Container(
-                        decoration: BoxDecoration(color: Colors.green),
+                        decoration: BoxDecoration(color: Theme.of(context).primaryColor),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           mainAxisSize: MainAxisSize.min,
@@ -317,7 +318,7 @@ class _SuraDetailState extends State<SuraDetail> {
                                 height: 12,
                                 child: LinearProgressIndicator(
                                   value: (snapshot.data) / 100,
-                                  backgroundColor: Colors.black87,
+                                  backgroundColor: Colors.grey[400],
                                   valueColor:
                                       AlwaysStoppedAnimation(Colors.red),
                                 )),
@@ -325,6 +326,7 @@ class _SuraDetailState extends State<SuraDetail> {
                                 padding: EdgeInsets.fromLTRB(20.0, 4, 4, 10),
                                 child: Text(
                                   'Completed..% ${((snapshot.data)).toStringAsFixed(0)}',
+                                  style: TextStyle(color: Colors.white),
                                 )),
                           ],
                         ),
@@ -335,8 +337,8 @@ class _SuraDetailState extends State<SuraDetail> {
       ),
       body: Container(
         child: SizedBox(
-          child: FutureBuilder(
-            future: loadSuraDetail(data),
+          child: StreamBuilder(
+            stream: _bloc.geSuraAyasStreamController,
             builder: (BuildContext ctx, AsyncSnapshot snapshot) {
               if (!snapshot.hasData || snapshot.data.isEmpty) {
                 return Center(child: CircularProgressIndicator());
@@ -354,7 +356,7 @@ class _SuraDetailState extends State<SuraDetail> {
                         splashColor: Theme.of(context).primaryColor,
                         onLongPress: () {
                           setBookMark(
-                              data, lang, this.index, ttlayas, index + 1, name);
+                              /* data,  */lang, this.index, ttlayas, index + 1, name);
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
@@ -387,7 +389,7 @@ class _SuraDetailState extends State<SuraDetail> {
                                       ),
                                     ),
                                     CircleAvatar(
-                                      backgroundColor: Colors.white,
+                                      backgroundColor: Colors.transparent,
                                       backgroundImage: AssetImage(
                                           "assets/images/ayetNo.png"),
                                       child: Text(
