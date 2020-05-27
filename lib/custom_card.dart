@@ -18,14 +18,13 @@ class CustomCard extends StatelessWidget {
           vertical: 5.0,
         ),
         decoration: BoxDecoration(
-             color: null,),
-            
+          color: null,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
-              
               child: SizedBox(
                 width: 80.0,
                 child: Column(
@@ -85,10 +84,11 @@ class CustomCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Center(
-                        child: Text(
-                          _otherLang(snapshot, index, lang),
-                          style: TextStyle(fontSize: 12.0),
-                        ),
+                        child: _otherLang(snapshot, index, lang),
+
+                        /* _otherLang(snapshot, index, lang), */
+
+                        // ),
                       ),
                     ],
                   )
@@ -138,7 +138,7 @@ _suraNumber(snapshot, int index, int lang) {
   }
 }
 
-_otherLang(snapshot, int index, int lang) {
+otherLang(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
       return '${snapshot.data[index].banglaName} / ${snapshot.data[index].englishName}';
@@ -149,6 +149,63 @@ _otherLang(snapshot, int index, int lang) {
     case 2:
       return '${snapshot.data[index].name} / ${snapshot.data[index].banglaName}';
   }
+}
+
+Widget _otherLang(snapshot, int index, int lang) {
+  Widget _others;
+  switch (lang) {
+    case 0:
+      _others = Wrap(
+        children: <Widget>[
+          Text(
+            '${snapshot.data[index].banglaName}',
+            style: TextStyle(fontSize: 12.0),
+          ),
+          Text(
+            ' / ${snapshot.data[index].englishName}',
+            style: TextStyle(fontSize: 12.0),
+          ),
+        ],
+      );
+      break;
+    case 1:
+      _others = Wrap(
+        children: <Widget>[
+          Text(
+            '${snapshot.data[index].name}',
+            style: TextStyle(
+              fontSize: 14.0,
+              height: .9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            ' / ${snapshot.data[index].englishName}',
+            style: TextStyle(fontSize: 12.0),
+          ),
+        ],
+      );
+      break;
+    case 2:
+      _others = Wrap(
+        children: <Widget>[
+          Text(
+            '${snapshot.data[index].name}',
+            style: TextStyle(
+              fontSize: 14.0,
+              height: .9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            ' / ${snapshot.data[index].banglaName}',
+            style: TextStyle(fontSize: 12.0),
+          ),
+        ],
+      );
+      break;
+  }
+  return _others;
 }
 
 _getAyahsNumber(snapshot, int index, int lang) {

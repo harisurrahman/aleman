@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'commonFunctions.dart';
 import 'sura_detail.dart';
 import 'color_theme.dart';
+import 'reciters.dart';
 
 class MainDrawer extends StatefulWidget {
   MainDrawer({Key key}) : super(key: key);
@@ -188,10 +189,14 @@ class _MainDrawerState extends State<MainDrawer> {
                 ttlAyas: 0,
               ),
             ),
-            Heading(
-              headingText: 'Preferences',
-              iconsName: Icons.settings,
-              ttlAyas: 0,
+            InkWell(
+               onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => Reciter())),
+              child: Heading(
+                headingText: 'Reciter',
+                iconsName: Icons.supervised_user_circle,
+                ttlAyas: 0,
+              ),
             ),
           ],
         ),

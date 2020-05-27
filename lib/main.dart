@@ -208,10 +208,10 @@ class _HomePageState extends State<HomePage> {
                 _currentLang = 'الإيمان';
                 break;
               case 1:
-                _currentLang = 'এল ঈমান';
+                _currentLang = 'আল ঈমান';
                 break;
               case 2:
-                _currentLang = 'The Faith';
+                _currentLang = 'Al Iman';
                 break;
             }
           });

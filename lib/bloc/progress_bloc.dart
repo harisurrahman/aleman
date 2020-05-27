@@ -7,10 +7,16 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../models/sura_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:aleman/reciters.dart';
 
 class ProgressBloc {
-  final baseUrlZip = 'https://everyayah.com/data/Abdullah_Basfar_32kbps/zips/';
-  final baseUrl = 'http://www.everyayah.com/data/Abdullah_Basfar_32kbps/';
+  String baseUrlZip/*  = 'https://everyayah.com/data/Abdullah_Basfar_32kbps/zips/' */;
+  //final baseUrl = 'http://www.everyayah.com/data/Abdullah_Basfar_32kbps/';
+  SharedPreferences _pref;
+  int reciter;
+  String reciterFolder;
+
 
   final _progressStreamController = StreamController<double>.broadcast();
   final _suraAyesStreamController = StreamController<List<Sura>>();
@@ -39,8 +45,10 @@ class ProgressBloc {
   //StreamSink<int> get getSid => _sidStreamController.sink;
 
   ProgressBloc() {
+    
     _suraAyasIndexStreamController.stream.listen(_getSuraAyas);
     _sidStreamController.stream.listen(_downloadSura);
+    
   }
 
   _getSuraAyas(int path) async {
@@ -53,19 +61,31 @@ class ProgressBloc {
   }
 
   _downloadSura(int index) async {
+    _pref = await SharedPreferences.getInstance();
+    reciter =_pref.getInt('current_reciter');
+    if(reciter==null){
+      reciter = 0;
+      // =  reciters[0]['url'];
+      _pref.setInt('current_reciter', reciter);
+    }
+    baseUrlZip = reciters[reciter]['url'];
+    reciterFolder =reciters[reciter]['name'].replaceAll(' ', '-');
+    
+    
     Directory dir = await getApplicationDocumentsDirectory();
 
     Dio dio = Dio();
 
-    bool isExists =
-        await File('${dir.path}/${index.toString().padLeft(3, '0')}001.mp3')
+    bool isExists = 
+
+        await File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}001.mp3')
             .exists();
     if (!isExists) {
       getVisibilitySinkController.add(true);
       //isDownload = true;
       try {
         await dio.download('$baseUrlZip${index.toString().padLeft(3, '0')}.zip',
-            '${dir.path}/${index.toString().padLeft(3, '0')}.zip',
+            '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip',
             onReceiveProgress: (rec, ttl) {
           getProgressSinkController.add((rec / ttl * 100));
         });
@@ -74,21 +94,21 @@ class ProgressBloc {
       }
       getVisibilitySinkController.add(false);
       //isDownload = false;
-      final bytes = File('${dir.path}/${index.toString().padLeft(3, '0')}.zip')
+      final bytes = File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip')
           .readAsBytesSync();
       final archive = ZipDecoder().decodeBytes(bytes);
       for (final file in archive) {
         final filename = file.name;
         if (file.isFile) {
           final data = file.content as List<int>;
-          File('${dir.path}/' + filename)
+          File('${dir.path}/$reciterFolder/' + filename)
             ..createSync(recursive: true)
             ..writeAsBytesSync(data);
         } else {
-          Directory('${dir.path}/' + filename)..create(recursive: true);
-          if (File('${dir.path}/${index.toString().padLeft(3, '0')}.zip')
+          Directory('${dir.path}/$reciterFolder/' + filename)..create(recursive: true);
+          if (File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip')
               .existsSync()) {
-            File('${dir.path}/${index.toString().padLeft(3, '0')}.zip').delete(
+            File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip').delete(
               recursive: true,
             );
           }

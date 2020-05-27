@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'commonFunctions.dart';
 import 'bloc/progress_bloc.dart';
+import 'reciters.dart';
 
 class SuraDetail extends StatefulWidget {
   /* final String data; */
@@ -41,8 +42,8 @@ class _SuraDetailState extends State<SuraDetail> {
   final int ttlayas;
   final int bookmarkAid;
 
-  _SuraDetailState(/* this.data, */ this.name, this.lang, this.index, this.ttlayas,
-      this.bookmarkAid);
+  _SuraDetailState(/* this.data, */ this.name, this.lang, this.index,
+      this.ttlayas, this.bookmarkAid);
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
@@ -54,17 +55,28 @@ class _SuraDetailState extends State<SuraDetail> {
   AudioPlayer advancedPlayer = AudioPlayer();
   List<bool> active = [false];
   Directory dir;
+  SharedPreferences _pref;
+  String reciterFolder;
+  int reciter;
 
   @override
   void initState() {
     super.initState();
     _bloc = ProgressBloc();
     _bloc.getSuraAyesAid.add(index);
+    SharedPreferences.getInstance().then((value){
+      _pref = value;
+      reciter = _pref.getInt('current_reciter');
+      reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
+     
+
+    });
     /* if Sura faathia not nownload download now */
-    getApplicationDocumentsDirectory().then((dir){
-      File('${dir.path}/001001.mp3').exists().then((exists){
-        if(!exists){
-          _bloc.getSid.add(1);
+    getApplicationDocumentsDirectory().then((value) {
+      dir = value;
+      File('${dir.path}/$reciterFolder/001001.mp3').exists().then((exists) {
+        if (!exists) {
+         _bloc.getSid.add(1);
         }
       });
     });
@@ -80,7 +92,7 @@ class _SuraDetailState extends State<SuraDetail> {
     advancedPlayer.onPlayerStateChanged.listen((s) {
       if (s == AudioPlayerState.COMPLETED && count <= ttlayas) {
         advancedPlayer.play(
-            '${dir.path}/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
+            '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
         count++;
         setState(() {
           active[count - 2] = true;
@@ -120,9 +132,9 @@ class _SuraDetailState extends State<SuraDetail> {
   }
 
   _checkDownloadStatus() async {
-    dir = await getApplicationDocumentsDirectory();
+    //dir = await getApplicationDocumentsDirectory();
     String filePath =
-        '${dir.path}/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
+        '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
     exists = await File(filePath).exists();
     if (!exists) {
       Timer _timer;
@@ -143,13 +155,13 @@ class _SuraDetailState extends State<SuraDetail> {
       active[i] = false;
     }
     //await dowloadAyas();
-
-    //dir = await getApplicationDocumentsDirectory();
+//print('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3');
+    dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
       await advancedPlayer
           .play(
-              '${dir.path}/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
+              '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
           .then((onValue) {
         setState(() {
           active[count - 1] = true;
@@ -159,7 +171,7 @@ class _SuraDetailState extends State<SuraDetail> {
     } else {
       count = index == 1 ? 2 : 1;
       //print('${dir.path}/001001.mp3');
-      await advancedPlayer.play('${dir.path}/001001.mp3');
+      await advancedPlayer.play('${dir.path}/$reciterFolder/001001.mp3');
       setState(() {
         active[count - count] = true;
       });
@@ -167,7 +179,7 @@ class _SuraDetailState extends State<SuraDetail> {
   }
 
   setBookMark(lang, sid, ttlayas, aid, name) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
+     _pref = await SharedPreferences.getInstance();
     //pref.remove('bookmarks');
     Map newBookMark = {
       'lang': lang,
@@ -178,11 +190,11 @@ class _SuraDetailState extends State<SuraDetail> {
     };
 
     List<Map> bookMarkList = List<Map>();
-    String bookmarks = pref.getString('bookmarks');
+    String bookmarks = _pref.getString('bookmarks');
     if (bookmarks == null) {
       bookMarkList.add(newBookMark);
       String bookmarkArray = json.encode(bookMarkList);
-      pref.setString('bookmarks', bookmarkArray);
+      _pref.setString('bookmarks', bookmarkArray);
     } else {
       var jsonResp = json.decode(bookmarks);
       var inBookmark = false;
@@ -198,7 +210,7 @@ class _SuraDetailState extends State<SuraDetail> {
       });
       bookMarkList.add(newBookMark);
 
-      pref.setString('bookmarks', json.encode(bookMarkList));
+      _pref.setString('bookmarks', json.encode(bookMarkList));
     }
   }
 
@@ -213,14 +225,27 @@ class _SuraDetailState extends State<SuraDetail> {
     switch (lang) {
       case 'bangla':
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
+            Container(
               padding: const EdgeInsets.fromLTRB(20, 2, 20, 2),
+              child: Text(
+                snapshot.data[index].banglaTranslit,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  color: Theme.of(context).primaryColor,
+                ),
+                textAlign: TextAlign.left,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
               child: Text(
                 snapshot.data[index].banglaText,
                 style: TextStyle(
                   fontSize: 15.0,
                 ),
+                textAlign: TextAlign.left,
               ),
             ),
           ],
@@ -228,20 +253,36 @@ class _SuraDetailState extends State<SuraDetail> {
       case 'original':
         return Container();
       case 'english':
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-          child: Text(
-            snapshot.data[index].englishText,
-            style: TextStyle(
-              fontSize: 15.0,
-              color: Color(0xff0b4703),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 2, 20, 2),
+              child: Text(
+                snapshot.data[index].englishTranslit,
+                style: TextStyle(
+                  fontSize: 17.0,
+                  color: Theme.of(context).primaryColor,
+                ),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
+              child: Text(
+                snapshot.data[index].englishText,
+                style: TextStyle(
+                  fontSize: 17.0,
+                ),
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ],
         );
     }
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -309,7 +350,8 @@ class _SuraDetailState extends State<SuraDetail> {
                     initialData: 0,
                     builder: (context, snapshot) {
                       return Container(
-                        decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           mainAxisSize: MainAxisSize.min,
@@ -356,7 +398,11 @@ class _SuraDetailState extends State<SuraDetail> {
                         splashColor: Theme.of(context).primaryColor,
                         onLongPress: () {
                           setBookMark(
-                              /* data,  */lang, this.index, ttlayas, index + 1, name);
+                              /* data,  */ lang,
+                              this.index,
+                              ttlayas,
+                              index + 1,
+                              name);
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
@@ -367,15 +413,16 @@ class _SuraDetailState extends State<SuraDetail> {
                             ),
                           ),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            /*crossAxisAlignment: CrossAxisAlignment.end, */
                             children: <Widget>[
                               Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(20, 4, 20, 4),
                                 child: Flex(
                                   direction: Axis.horizontal,
-                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  /*  mainAxisAlignment: MainAxisAlignment.start, */
                                   textDirection: TextDirection.rtl,
                                   children: <Widget>[
                                     Flexible(
@@ -385,7 +432,8 @@ class _SuraDetailState extends State<SuraDetail> {
                                         style: TextStyle(
                                           fontSize: 25.0,
                                         ),
-                                        textDirection: TextDirection.rtl,
+                                        /* textDirection: TextDirection.rtl,  */
+                                        textAlign: TextAlign.right,
                                       ),
                                     ),
                                     CircleAvatar(
@@ -402,6 +450,7 @@ class _SuraDetailState extends State<SuraDetail> {
                                 ),
                               ),
                               selectedLang(snapshot, index),
+                              /* selectTranslitration(snapshot, index), */
                             ],
                           ),
                         ),
