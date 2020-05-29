@@ -106,12 +106,12 @@ class ProgressBloc {
             ..writeAsBytesSync(data);
         } else {
           Directory('${dir.path}/$reciterFolder/' + filename)..create(recursive: true);
-          if (File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip')
-              .existsSync()) {
-            File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip').delete(
-              recursive: true,
-            );
-          }
+        }
+        if (File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip')
+            .existsSync()) {
+          File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}.zip').delete(
+            recursive: true,
+          );
         }
       }
     }
