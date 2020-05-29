@@ -66,8 +66,13 @@ class CustomCard extends StatelessWidget {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      snapshot.data[index].englishNameTranslation,
-                      style: TextStyle(fontSize: 12.0),
+                      (lang == 1)
+                          ? snapshot.data[index].banglaTranslated
+                          : snapshot.data[index].englishTranslated,
+                      style: TextStyle(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Align(
@@ -98,11 +103,15 @@ class CustomCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: CircleAvatar(
-                radius: 27.0,
-                child: Text(
-                  _suraNumber(snapshot, index, lang),
-                  style: TextStyle(
-                    fontSize: lang == 0 ? 30.0 : 20.0,
+                radius: 27,
+                backgroundColor: Colors.black,
+                child: CircleAvatar(
+                  radius: 25,
+                  child: Text(
+                    _suraNumber(snapshot, index, lang),
+                    style: TextStyle(
+                      fontSize: lang == 0 ? 30.0 : 20.0,
+                    ),
                   ),
                 ),
               ),
@@ -117,7 +126,7 @@ class CustomCard extends StatelessWidget {
 _suraName(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
-      return snapshot.data[index].name;
+      return snapshot.data[index].originalName;
       break;
     case 1:
       return snapshot.data[index].banglaName;
@@ -129,16 +138,16 @@ _suraName(snapshot, int index, int lang) {
 _suraNumber(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
-      return snapshot.data[index].englishNumber.toString().withPersianNumbers();
+      return snapshot.data[index].sid.toString().withPersianNumbers();
       break;
     case 1:
-      return snapshot.data[index].englishNumber.toString().withBanglaNumbers();
+      return snapshot.data[index].sid.toString().withBanglaNumbers();
     case 2:
-      return snapshot.data[index].englishNumber.toString();
+      return snapshot.data[index].sid.toString();
   }
 }
 
-otherLang(snapshot, int index, int lang) {
+/* otherLang(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
       return '${snapshot.data[index].banglaName} / ${snapshot.data[index].englishName}';
@@ -149,7 +158,7 @@ otherLang(snapshot, int index, int lang) {
     case 2:
       return '${snapshot.data[index].name} / ${snapshot.data[index].banglaName}';
   }
-}
+} */
 
 Widget _otherLang(snapshot, int index, int lang) {
   Widget _others;
@@ -172,7 +181,7 @@ Widget _otherLang(snapshot, int index, int lang) {
       _others = Wrap(
         children: <Widget>[
           Text(
-            '${snapshot.data[index].name}',
+            '${snapshot.data[index].originalName}',
             style: TextStyle(
               fontSize: 14.0,
               height: .9,
@@ -181,7 +190,10 @@ Widget _otherLang(snapshot, int index, int lang) {
           ),
           Text(
             ' / ${snapshot.data[index].englishName}',
-            style: TextStyle(fontSize: 12.0),
+            style: TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       );
@@ -190,7 +202,7 @@ Widget _otherLang(snapshot, int index, int lang) {
       _others = Wrap(
         children: <Widget>[
           Text(
-            '${snapshot.data[index].name}',
+            '${snapshot.data[index].originalName}',
             style: TextStyle(
               fontSize: 14.0,
               height: .9,
@@ -199,7 +211,10 @@ Widget _otherLang(snapshot, int index, int lang) {
           ),
           Text(
             ' / ${snapshot.data[index].banglaName}',
-            style: TextStyle(fontSize: 12.0),
+            style: TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       );
@@ -211,12 +226,12 @@ Widget _otherLang(snapshot, int index, int lang) {
 _getAyahsNumber(snapshot, int index, int lang) {
   switch (lang) {
     case 0:
-      return 'الآيات ${snapshot.data[index].numberEnglishAyahs.toString().withPersianNumbers()}';
+      return 'الآيات ${snapshot.data[index].numberOfAyets.toString().withPersianNumbers()}';
       break;
     case 1:
-      return 'আয়াত ${snapshot.data[index].numberEnglishAyahs.toString().withBanglaNumbers()}';
+      return 'আয়াত ${snapshot.data[index].numberOfAyets.toString().withBanglaNumbers()}';
       break;
     case 2:
-      return 'Ayahs ${snapshot.data[index].numberEnglishAyahs}';
+      return 'Ayahs ${snapshot.data[index].numberOfAyets}';
   }
 }

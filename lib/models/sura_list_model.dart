@@ -1,35 +1,34 @@
 class SuraList {
-  final String number;
-  final String name;
+  final int sid;
+  final String originalName;
   final String englishName;
-  final String englishNameTranslation;
-  final String numberOfAyahs;
-  final String revelationType;
   final String banglaName;
-  final int englishNumber;
-  final String numberBanglaAyahs;
-  final String numberEnglishAyahs;
+  final String englishTranslated;
+  final String banglaTranslated;
+  final String revelationType;
+  final int numberOfAyets;
 
-  SuraList({this.number, this.name, this.englishName, this.englishNameTranslation,
-      this.numberOfAyahs, this.revelationType, this.banglaName,  this.englishNumber,
-      this.numberBanglaAyahs, this.numberEnglishAyahs});
+  SuraList({
+    this.sid,
+    this.originalName,
+    this.englishName,
+    this.banglaName,
+    this.englishTranslated,
+    this.banglaTranslated,
+    this.revelationType,
+    this.numberOfAyets,
+  });
 
-  factory SuraList.fromJson(Map<String, dynamic> json){
-
+  factory SuraList.fromJson(Map<String, dynamic> json) {
     return SuraList(
-      number: json['number'],
-      name: json['name'],
+      sid: json['sid'],
+      originalName: json['originalName'],
       englishName: json['englishName'],
-      englishNameTranslation: json['englishNameTranslation'],
-      numberOfAyahs: json['numberOfAyahs'],
-      revelationType: json['revelationType'],
       banglaName: json['banglaName'],
-      englishNumber: json['englishNumber'],
-      numberBanglaAyahs: json['numberBanglaAyahs'],
-      numberEnglishAyahs: json['numberEnglishAyahs']
-
+      englishTranslated: json['englishTranslated'],
+      banglaTranslated: json['banglaTranslated'],
+      revelationType: json['revelationType'],
+      numberOfAyets: json['numberOfAyets'],
     );
   }
 }
-
-

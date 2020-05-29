@@ -8,8 +8,7 @@ import 'main_drawer.dart';
 import 'theme.dart';
 import 'bloc/sura_list_bloc.dart';
 
-void main()=>runApp(MyApp());
-
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -71,14 +70,11 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                  /* data:
-                                      'assets/quran/sura-${snapshot.data[index].englishNumber.toString()}.json', */
-                                  name: snapshot.data[index].name,
-                                  lang: 'original',
-                                  index: snapshot.data[index].englishNumber,
-                                  ttlayas: int.parse(
-                                    snapshot.data[index].numberEnglishAyahs,
-                                  )),
+                                name: snapshot.data[index].originalName,
+                                lang: 'original',
+                                index: snapshot.data[index].sid,
+                                ttlayas: snapshot.data[index].numberOfAyets,
+                              ),
                             ),
                           );
                           //print(index);
@@ -93,7 +89,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       StreamBuilder(
-        stream:_suraBloc.getSuraListStream,
+        stream: _suraBloc.getSuraListStream,
         builder: (BuildContext ctx, AsyncSnapshot snapshot) {
           if (!snapshot.hasData || snapshot.data.isEmpty) {
             return Center(child: CircularProgressIndicator());
@@ -106,21 +102,14 @@ class _HomePageState extends State<HomePage> {
                     Material(
                       /* color: Colors.transparent, */
                       child: InkWell(
-                        /* onLongPress: () {
-                          bookMarkSura(/* (index, snapshot.data[index].name */);
-                        }, */
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                /* data:
-                                    'assets/quran/sura-${(index + 1).toString()}.json', */
-                                name: snapshot.data[index].banglaName,
-                                lang: 'bangla',
-                                index: snapshot.data[index].englishNumber,
-                                ttlayas: int.parse(
-                                    snapshot.data[index].numberEnglishAyahs),
-                              ),
+                                  name: snapshot.data[index].banglaName,
+                                  lang: 'bangla',
+                                  index: snapshot.data[index].sid,
+                                  ttlayas: snapshot.data[index].numberOfAyets),
                             ),
                           );
                         },
@@ -151,13 +140,10 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => SuraDetail(
-                                /* data:
-                                    'assets/quran/sura-${(index + 1).toString()}.json', */
                                 name: snapshot.data[index].englishName,
                                 lang: 'english',
-                                index: snapshot.data[index].englishNumber,
-                                ttlayas: int.parse(
-                                    snapshot.data[index].numberEnglishAyahs),
+                                index: snapshot.data[index].sid,
+                                ttlayas: snapshot.data[index].numberOfAyets,
                               ),
                             ),
                           );
@@ -178,7 +164,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _suraBloc = SuraListBloc();
-    
+
     super.initState();
   }
 
