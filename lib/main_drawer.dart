@@ -185,7 +185,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   .push(MaterialPageRoute(builder: (context) => ColorThemes())),
               child: Heading(
                 headingText: 'Theme Color',
-                iconsName: Icons.colorize,
+                iconsName: Icons.color_lens,
                 ttlAyas: 0,
               ),
             ),

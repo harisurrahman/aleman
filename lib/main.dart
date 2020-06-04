@@ -2,11 +2,11 @@ import 'package:provider/provider.dart';
 import './custom_card.dart';
 import 'package:flutter/material.dart';
 import 'bottom_navigation.dart';
-//import 'dto/load_sura_list.dart';
 import './sura_detail.dart';
 import 'main_drawer.dart';
 import 'theme.dart';
 import 'bloc/sura_list_bloc.dart';
+import 'commonFunctions.dart';
 
 void main() => runApp(MyApp());
 
@@ -164,6 +164,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _suraBloc = SuraListBloc();
+    copyFromAssets();
 
     super.initState();
   }

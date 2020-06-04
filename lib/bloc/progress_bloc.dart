@@ -78,7 +78,7 @@ class ProgressBloc {
 
     bool isExists = 
 
-        await File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}001.mp3')
+        await File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}002.mp3')
             .exists();
     if (!isExists) {
       getVisibilitySinkController.add(true);

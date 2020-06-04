@@ -59,6 +59,11 @@ flutter:
     - assets/images/
     - assets/json/
     - assets/quran/
+    - assets/bismillah/Yassin-Al-Jazaery/
+    - assets/bismillah/Abdul-Basit-Murattal/
+    - assets/bismillah/Abdullah-Basfar/
+    - assets/bismillah/Alafasy/
+    - assets/bismillah/Ali-Jaber/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

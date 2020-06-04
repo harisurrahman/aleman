@@ -90,10 +90,6 @@ class CustomCard extends StatelessWidget {
                     children: <Widget>[
                       Center(
                         child: _otherLang(snapshot, index, lang),
-
-                        /* _otherLang(snapshot, index, lang), */
-
-                        // ),
                       ),
                     ],
                   )

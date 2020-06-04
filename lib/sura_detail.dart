@@ -131,7 +131,7 @@ class _SuraDetailState extends State<SuraDetail> {
     });
   }
 
-  _checkDownloadStatus() async {
+/*   _checkDownloadStatus() async {
     //dir = await getApplicationDocumentsDirectory();
     String filePath =
         '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
@@ -148,7 +148,7 @@ class _SuraDetailState extends State<SuraDetail> {
     } else {
       _play();
     }
-  }
+  } */
 
   _play() async {
     for (int i = 1; i < ttlayas; i++) {
@@ -171,7 +171,20 @@ class _SuraDetailState extends State<SuraDetail> {
     } else {
       count = index == 1 ? 2 : 1;
       //print('${dir.path}/001001.mp3');
-      await advancedPlayer.play('${dir.path}/$reciterFolder/001001.mp3');
+      String bismillah ='';
+      if(reciterFolder=='Yassin-Al-Jazaery') {
+        bismillah = '${index.toString().padLeft(3, '0')}001';
+        count = count+1; 
+      }else{
+        if(index != 9){
+          bismillah = '001001';
+        }else{
+          bismillah = '${index.toString().padLeft(3, '0')}001';
+          count = count+1;
+        }
+       
+      }
+     await advancedPlayer.play('${dir.path}/$reciterFolder/$bismillah.mp3');
       setState(() {
         active[count - count] = true;
       });
@@ -308,8 +321,8 @@ class _SuraDetailState extends State<SuraDetail> {
             onPressed: () {
               if (!_isPlaying) {
                 _bloc.getSid.add(index);
-                //play();
-                _checkDownloadStatus();
+                _play();
+                //_checkDownloadStatus();
                 _isPlaying = true;
               }
             },
