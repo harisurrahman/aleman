@@ -13,7 +13,7 @@ class MainDrawer extends StatefulWidget {
 }
 
 class _MainDrawerState extends State<MainDrawer> {
-  StreamController _streamController;
+  StreamController _streamController = StreamController<List<Map>>();
   Stream _stream;
   bool _showContent = false;
   int totalAyas = 0;
@@ -21,7 +21,7 @@ class _MainDrawerState extends State<MainDrawer> {
 
   @override
   void initState() {
-    _streamController = StreamController();
+
     _stream = _streamController.stream;
     getBookMarks().then((resp) {
       if (resp != null) {
@@ -33,6 +33,17 @@ class _MainDrawerState extends State<MainDrawer> {
       }
     });
     super.initState();
+  }
+
+  populateBookmark()async{
+    var resp = await getBookMarks();
+    if (resp != null) {
+        _bookMarks.addAll(resp);
+        _streamController.add(resp);
+        setState(() {
+          totalAyas = resp.length;
+        });
+    }
   }
 
   @override
@@ -83,8 +94,15 @@ class _MainDrawerState extends State<MainDrawer> {
             InkWell(
               splashColor: Theme.of(context).primaryColor,
               onTap: () {
+                //_streamController.add(resp);
                 setState(() {
-                  if (totalAyas > 0) _showContent = !_showContent;
+                  if (totalAyas > 0){
+                    
+                    _showContent = true;
+                    
+                    
+                    
+                  } 
                 });
               },
               child: Heading(
@@ -97,6 +115,7 @@ class _MainDrawerState extends State<MainDrawer> {
               visible: _showContent,
               child: StreamBuilder(
                 stream: _stream,
+
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (!snapshot.hasData || snapshot.data.isEmpty) {
                     return Center(

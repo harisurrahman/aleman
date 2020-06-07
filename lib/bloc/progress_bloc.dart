@@ -11,12 +11,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:aleman/reciters.dart';
 
 class ProgressBloc {
-  String baseUrlZip/*  = 'https://everyayah.com/data/Abdullah_Basfar_32kbps/zips/' */;
-  //final baseUrl = 'http://www.everyayah.com/data/Abdullah_Basfar_32kbps/';
+  String baseUrlZip;
   SharedPreferences _pref;
   int reciter;
   String reciterFolder;
-
+  bool visible;
 
   final _progressStreamController = StreamController<double>.broadcast();
   final _suraAyesStreamController = StreamController<List<Sura>>();
@@ -39,16 +38,15 @@ class ProgressBloc {
   StreamSink<bool> get getVisibilitySinkController =>
       _visiblityStreamController.sink;
 
-  //Stream<int> get getSidStreamController => _sidStreamController.stream;
   StreamSink<int> get getSid => _sidStreamController.sink;
   StreamSink<int> get getSuraAyesAid => _suraAyasIndexStreamController;
-  //StreamSink<int> get getSid => _sidStreamController.sink;
+
 
   ProgressBloc() {
     
     _suraAyasIndexStreamController.stream.listen(_getSuraAyas);
     _sidStreamController.stream.listen(_downloadSura);
-    
+   
   }
 
   _getSuraAyas(int path) async {
@@ -123,5 +121,6 @@ class ProgressBloc {
     _visiblityStreamController.close();
     _suraAyesStreamController.close();
     _suraAyasIndexStreamController.close();
+
   }
 }

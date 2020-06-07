@@ -42,8 +42,8 @@ class _SuraDetailState extends State<SuraDetail> {
   final int ttlayas;
   final int bookmarkAid;
 
-  _SuraDetailState(/* this.data, */ this.name, this.lang, this.index,
-      this.ttlayas, this.bookmarkAid);
+  _SuraDetailState(
+      this.name, this.lang, this.index, this.ttlayas, this.bookmarkAid);
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
@@ -53,37 +53,36 @@ class _SuraDetailState extends State<SuraDetail> {
   bool exists = false;
   ProgressBloc _bloc;
   AudioPlayer advancedPlayer = AudioPlayer();
-  List<bool> active = [false];
+  List<bool> active;
   Directory dir;
   SharedPreferences _pref;
   String reciterFolder;
   int reciter;
-
+  List<Color> bookmarkColor;
   @override
   void initState() {
     super.initState();
+
+    bookmarkColor = List.filled(ttlayas, Colors.black);
+
     _bloc = ProgressBloc();
     _bloc.getSuraAyesAid.add(index);
-    SharedPreferences.getInstance().then((value){
+    SharedPreferences.getInstance().then((value) {
       _pref = value;
       reciter = _pref.getInt('current_reciter');
       reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
-     
-
     });
-    /* if Sura faathia not nownload download now */
+
     getApplicationDocumentsDirectory().then((value) {
       dir = value;
       File('${dir.path}/$reciterFolder/001001.mp3').exists().then((exists) {
         if (!exists) {
-         _bloc.getSid.add(1);
+          _bloc.getSid.add(1);
         }
       });
     });
 
-    for (int i = 1; i < ttlayas; i++) {
-      active.add(false);
-    }
+    active = List.filled(ttlayas, false);
 
     if (bookmarkAid != null) {
       _resumePlay();
@@ -122,6 +121,7 @@ class _SuraDetailState extends State<SuraDetail> {
       }
       setState(() {
         active[bookmarkAid - 1] = true;
+        bookmarkColor[bookmarkAid - 1] = Colors.red;
       });
       count = bookmarkAid - 1;
       itemScrollController.scrollTo(
@@ -131,31 +131,11 @@ class _SuraDetailState extends State<SuraDetail> {
     });
   }
 
-/*   _checkDownloadStatus() async {
-    //dir = await getApplicationDocumentsDirectory();
-    String filePath =
-        '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
-    exists = await File(filePath).exists();
-    if (!exists) {
-      Timer _timer;
-      _timer = Timer.periodic(Duration(seconds: 2), (timer) async {
-        bool exists = await File(filePath).exists();
-        if (exists) {
-          await _play();
-          _timer.cancel();
-        }
-      });
-    } else {
-      _play();
-    }
-  } */
-
   _play() async {
     for (int i = 1; i < ttlayas; i++) {
       active[i] = false;
     }
-    //await dowloadAyas();
-//print('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3');
+
     dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
@@ -170,21 +150,19 @@ class _SuraDetailState extends State<SuraDetail> {
       });
     } else {
       count = index == 1 ? 2 : 1;
-      //print('${dir.path}/001001.mp3');
-      String bismillah ='';
-      if(reciterFolder=='Yassin-Al-Jazaery') {
+      String bismillah = '';
+      if (reciterFolder == 'Yassin-Al-Jazaery') {
         bismillah = '${index.toString().padLeft(3, '0')}001';
-        count = count+1; 
-      }else{
-        if(index != 9){
+        count = count + 1;
+      } else {
+        if (index != 9) {
           bismillah = '001001';
-        }else{
+        } else {
           bismillah = '${index.toString().padLeft(3, '0')}001';
-          count = count+1;
+          count = count + 1;
         }
-       
       }
-     await advancedPlayer.play('${dir.path}/$reciterFolder/$bismillah.mp3');
+      await advancedPlayer.play('${dir.path}/$reciterFolder/$bismillah.mp3');
       setState(() {
         active[count - count] = true;
       });
@@ -192,8 +170,9 @@ class _SuraDetailState extends State<SuraDetail> {
   }
 
   setBookMark(lang, sid, ttlayas, aid, name) async {
-     _pref = await SharedPreferences.getInstance();
-    //pref.remove('bookmarks');
+    _pref = await SharedPreferences.getInstance();
+    colorizeBookmark(aid - 1);
+
     Map newBookMark = {
       'lang': lang,
       'sid': index,
@@ -295,7 +274,16 @@ class _SuraDetailState extends State<SuraDetail> {
     }
   }
 
-    @override
+  colorizeBookmark(int index) {
+    setState(() {
+      if (bookmarkAid != null) {
+        bookmarkColor[bookmarkAid - 1] = Colors.black;
+      }
+      bookmarkColor[index] = Colors.orange;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -411,11 +399,7 @@ class _SuraDetailState extends State<SuraDetail> {
                         splashColor: Theme.of(context).primaryColor,
                         onLongPress: () {
                           setBookMark(
-                              /* data,  */ lang,
-                              this.index,
-                              ttlayas,
-                              index + 1,
-                              name);
+                              lang, this.index, ttlayas, index + 1, name);
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
@@ -443,8 +427,8 @@ class _SuraDetailState extends State<SuraDetail> {
                                       child: Text(
                                         snapshot.data[index].quranText.trim(),
                                         style: TextStyle(
-                                          fontSize: 25.0,
-                                        ),
+                                            fontSize: 25.0,
+                                            color: bookmarkColor[index]),
                                         /* textDirection: TextDirection.rtl,  */
                                         textAlign: TextAlign.right,
                                       ),
