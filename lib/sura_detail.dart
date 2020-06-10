@@ -235,7 +235,7 @@ class _SuraDetailState extends State<SuraDetail> {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
               child: Text(
-                snapshot.data[index].banglaText,
+                snapshot.data[index].banglaMurtaza,
                 style: TextStyle(
                   fontSize: 15.0,
                 ),

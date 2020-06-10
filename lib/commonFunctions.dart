@@ -75,6 +75,12 @@ copyFromAssets() async {
       }
 
     }
-
   }
+}
+
+Future<String>defaultAuther()async{
+  SharedPreferences _pref = await SharedPreferences.getInstance();
+  var auther = _pref.getString('auther');
+  return auther != null ? auther:'notfound';
+
 }

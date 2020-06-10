@@ -12,13 +12,14 @@ class MainDrawer extends StatefulWidget {
 }
 
 class _MainDrawerState extends State<MainDrawer> {
-
   bool _showContent = false;
+  bool _translated = false;
   int totalAyas = 0;
   List<Map> _bookMarks = List<Map>();
 
   @override
   void initState() {
+    
     getBookMarks().then((resp) {
       if (resp != null) {
         _bookMarks.addAll(resp);
@@ -191,7 +192,6 @@ class _MainDrawerState extends State<MainDrawer> {
               child: Heading(
                 headingText: 'Theme Color',
                 iconsName: Icons.color_lens,
-                ttlAyas: 0,
               ),
             ),
             InkWell(
@@ -200,9 +200,53 @@ class _MainDrawerState extends State<MainDrawer> {
               child: Heading(
                 headingText: 'Reciter',
                 iconsName: Icons.supervised_user_circle,
-                ttlAyas: 0,
               ),
             ),
+            InkWell(
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => Reciter())),
+              child: Heading(
+                headingText: 'Bangla Translation By',
+                iconsName: Icons.language,
+              ),
+            ),
+            Visibility(
+              visible: _translated,
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                      title: Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Wrap(
+                      children: <Widget>[
+                        Icon(Icons.translate),
+                        Text('  মুরতোজা হাসান খালেদ'),
+                      ],
+                    ),
+                  )),
+                  Divider(
+                    height: 0.2,
+                    color: Theme.of(context).primaryColor,
+                    indent: 30,
+                  ),
+                  ListTile(
+                      title: Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Wrap(
+                      children: <Widget>[
+                        Icon(Icons.translate),
+                        Text('  মুহিউদ্দীন খান'),
+                      ],
+                    ),
+                  )),
+                  Divider(
+                    height: 0.2,
+                    color: Theme.of(context).primaryColor,
+                    indent: 30,
+                  ),
+                ],
+              ),
+            )
           ],
         ),
       ],
@@ -236,7 +280,7 @@ class _HeadingState extends State<Heading> {
             child: new Text(widget.headingText),
             alignment: Alignment(-1.2, 0),
           ),
-          trailing: (widget.ttlAyas > 0)
+          trailing: (widget.ttlAyas != null)
               ? Badge(
                   totalAyas: widget.ttlAyas.toString(),
                 )
