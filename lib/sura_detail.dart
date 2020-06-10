@@ -121,7 +121,7 @@ class _SuraDetailState extends State<SuraDetail> {
       }
       setState(() {
         active[bookmarkAid - 1] = true;
-        bookmarkColor[bookmarkAid - 1] = Colors.red;
+        bookmarkColor[bookmarkAid - 1] = Theme.of(context).primaryColor;
       });
       count = bookmarkAid - 1;
       itemScrollController.scrollTo(
@@ -139,6 +139,8 @@ class _SuraDetailState extends State<SuraDetail> {
     dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
+      print(
+          '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3');
       await advancedPlayer
           .play(
               '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
@@ -171,8 +173,8 @@ class _SuraDetailState extends State<SuraDetail> {
 
   setBookMark(lang, sid, ttlayas, aid, name) async {
     _pref = await SharedPreferences.getInstance();
-    colorizeBookmark(aid - 1);
 
+    colorizeBookmark(aid);
     Map newBookMark = {
       'lang': lang,
       'sid': index,
@@ -276,10 +278,10 @@ class _SuraDetailState extends State<SuraDetail> {
 
   colorizeBookmark(int index) {
     setState(() {
-      if (bookmarkAid != null) {
+      /* if (bookmarkAid != null) {
         bookmarkColor[bookmarkAid - 1] = Colors.black;
-      }
-      bookmarkColor[index] = Colors.orange;
+      } */
+      bookmarkColor[index-1] = Theme.of(context).primaryColor;
     });
   }
 

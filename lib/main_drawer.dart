@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'commonFunctions.dart';
 import 'sura_detail.dart';
@@ -13,48 +12,35 @@ class MainDrawer extends StatefulWidget {
 }
 
 class _MainDrawerState extends State<MainDrawer> {
-  StreamController _streamController = StreamController<List<Map>>();
-  Stream _stream;
+
   bool _showContent = false;
   int totalAyas = 0;
   List<Map> _bookMarks = List<Map>();
 
   @override
   void initState() {
-
-    _stream = _streamController.stream;
     getBookMarks().then((resp) {
       if (resp != null) {
         _bookMarks.addAll(resp);
-        _streamController.add(resp);
         setState(() {
-          totalAyas = resp.length;
+          totalAyas = _bookMarks.length;
         });
       }
     });
     super.initState();
   }
 
-  populateBookmark()async{
-    var resp = await getBookMarks();
-    if (resp != null) {
-        _bookMarks.addAll(resp);
-        _streamController.add(resp);
-        setState(() {
-          totalAyas = resp.length;
-        });
-    }
+  populateBookmark() async {
+    return _bookMarks;
   }
 
   @override
   void dispose() {
-    _streamController.close();
     super.dispose();
   }
 
   removeBookMarkItem(int index) async {
     _bookMarks.removeAt(index);
-    if (_bookMarks.length >= 0) _streamController.add(_bookMarks);
     await removeBookMark(_bookMarks);
     setState(() {
       totalAyas = _bookMarks.length;
@@ -96,13 +82,12 @@ class _MainDrawerState extends State<MainDrawer> {
               onTap: () {
                 //_streamController.add(resp);
                 setState(() {
-                  if (totalAyas > 0){
-                    
-                    _showContent = true;
-                    
-                    
-                    
-                  } 
+                  if (totalAyas > 0) {
+                    _showContent = !_showContent;
+                    if (_showContent) {
+                      populateBookmark();
+                    }
+                  }
                 });
               },
               child: Heading(
@@ -113,9 +98,8 @@ class _MainDrawerState extends State<MainDrawer> {
             ),
             Visibility(
               visible: _showContent,
-              child: StreamBuilder(
-                stream: _stream,
-
+              child: FutureBuilder(
+                future: populateBookmark(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (!snapshot.hasData || snapshot.data.isEmpty) {
                     return Center(
@@ -131,19 +115,21 @@ class _MainDrawerState extends State<MainDrawer> {
                           children: <Widget>[
                             InkWell(
                               splashColor: Theme.of(context).primaryColor,
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => SuraDetail(
-                                    /* data:
-                                        'assets/quran/sura-${(snapshot.data[index]['sid']).toString()}.json', */
-                                    name: snapshot.data[index]['name'],
-                                    lang: snapshot.data[index]['lang'],
-                                    index: snapshot.data[index]['sid'],
-                                    ttlayas: snapshot.data[index]['ttlayas'],
-                                    bookmarkAid: snapshot.data[index]['aid'],
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => SuraDetail(
+                                      name: snapshot.data[index]['name'],
+                                      lang: snapshot.data[index]['lang'],
+                                      index: snapshot.data[index]['sid'],
+                                      ttlayas: snapshot.data[index]['ttlayas'],
+                                      bookmarkAid: snapshot.data[index]['aid'],
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              },
                               child: ListTile(
                                 title: Padding(
                                   padding: const EdgeInsets.only(left: 20.0),
@@ -209,7 +195,7 @@ class _MainDrawerState extends State<MainDrawer> {
               ),
             ),
             InkWell(
-               onTap: () => Navigator.of(context)
+              onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => Reciter())),
               child: Heading(
                 headingText: 'Reciter',
