@@ -214,7 +214,6 @@ class _SuraDetailState extends State<SuraDetail> {
     reciter = _pref.getInt('current_reciter');
     reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
     Directory dir = await getApplicationDocumentsDirectory();
-    print('${dir.path}/$reciterFolder/${sid.toString().padLeft(3,'0')}${aid.toString().padLeft(3, '0')}.mp3');
     File('${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3').exists().then((exists) {
       if (exists) {
         String ayet = '${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3';

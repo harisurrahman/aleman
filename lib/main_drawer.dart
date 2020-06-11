@@ -29,25 +29,23 @@ class _MainDrawerState extends State<MainDrawer> {
       }
     });
 
-    getAuther().then((translator){
+    getAuther().then((translator) {
       setState(() {
         _auther[translator] = true;
       });
     });
 
-    
-    
     super.initState();
   }
 
-  _setAuther(int auther){
-      _auther[0] = false;
-      _auther[1] = false;
-      setState(() {
-        _auther[auther] = true;
-      });
-      setAuther(auther);
-    }
+  _setAuther(int auther) {
+    _auther[0] = false;
+    _auther[1] = false;
+    setState(() {
+      _auther[auther] = true;
+    });
+    setAuther(auther);
+  }
 
   populateBookmark() async {
     return _bookMarks;
@@ -72,14 +70,14 @@ class _MainDrawerState extends State<MainDrawer> {
       shrinkWrap: true,
       children: <Widget>[
         DrawerHeader(
-              
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(image: AssetImage('assets/images/quran-drawer12.png'),
-                  fit: BoxFit.fill,
-                ),)
-              )),
-      
+            child: Container(
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+          child: Image(
+           
+            image: AssetImage('assets/images/quran-drawer.gif'),
+            fit: BoxFit.fill,
+          ),
+        )),
         Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -223,47 +221,58 @@ class _MainDrawerState extends State<MainDrawer> {
               child: Column(
                 children: <Widget>[
                   ListTile(
-                    onTap: (){
-                      _setAuther(0);
-                    },
+                      onTap: () {
+                        _setAuther(0);
+                      },
                       title: Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Wrap(
-                      children: <Widget>[
-                        Icon(Icons.translate, color: _auther[0]==true ? Theme.of(context).primaryColor:Colors.black,),
-                        Text('  মুরতোজা হাসান খালেদ', style: TextStyle(color: _auther[0]==true ? Theme.of(context).primaryColor:Colors.black),),
-                      ],
-                    ),
-                  )),
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Wrap(
+                          children: <Widget>[
+                            Icon(
+                              Icons.translate,
+                              color: _auther[0] == true
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.black,
+                            ),
+                            Text(
+                              '  মুরতোজা হাসান খালেদ',
+                              style: TextStyle(
+                                  color: _auther[0] == true
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.black),
+                            ),
+                          ],
+                        ),
+                      )),
                   Divider(
                     height: 0.2,
                     color: Theme.of(context).primaryColor,
                     indent: 30,
                   ),
                   ListTile(
-                    onTap: (){
-                      _setAuther(1);
-                    },
+                      onTap: () {
+                        _setAuther(1);
+                      },
                       title: Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Wrap(
-                      children: <Widget>[
-                        Icon(
-                          Icons.translate,
-                          color: _auther[1] == true
-                              ? Theme.of(context).primaryColor
-                              : Colors.black,
-                        ),
-                        Text(
-                          '  মুহিউদ্দীন খান',
-                          style: TextStyle(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Wrap(
+                          children: <Widget>[
+                            Icon(
+                              Icons.translate,
                               color: _auther[1] == true
                                   ? Theme.of(context).primaryColor
-                                  : Colors.black),
+                                  : Colors.black,
+                            ),
+                            Text(
+                              '  মুহিউদ্দীন খান',
+                              style: TextStyle(
+                                  color: _auther[1] == true
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.black),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  )),
+                      )),
                   Divider(
                     height: 0.2,
                     color: Theme.of(context).primaryColor,
