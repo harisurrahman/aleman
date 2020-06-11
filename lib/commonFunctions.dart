@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:persian/persian.dart';
+import 'number_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -78,9 +79,20 @@ copyFromAssets() async {
   }
 }
 
-Future<String>defaultAuther()async{
+Future<int>getAuther()async{
   SharedPreferences _pref = await SharedPreferences.getInstance();
-  var auther = _pref.getString('auther');
-  return auther != null ? auther:'notfound';
+  int auther = _pref.getInt('auther');
+  if(auther==null){
+    auther = 0;
+    _pref.setInt('auther', auther);
+  }
+  return auther;
+
+}
+
+setAuther(int auther)async{
+  SharedPreferences _pref = await SharedPreferences.getInstance();
+  _pref.setInt('auther', auther);
+ 
 
 }

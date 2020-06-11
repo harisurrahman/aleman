@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:persian/persian.dart';
+import 'number_translate.dart';
 
 class CustomCard extends StatelessWidget {
   final AsyncSnapshot snapshot;

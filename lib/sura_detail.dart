@@ -59,12 +59,15 @@ class _SuraDetailState extends State<SuraDetail> {
   String reciterFolder;
   int reciter;
   List<Color> bookmarkColor;
+  int _auther;
   @override
   void initState() {
     super.initState();
-
+    
     bookmarkColor = List.filled(ttlayas, Colors.black);
-
+    getAuther().then((translator){
+      _auther = translator;
+    });
     _bloc = ProgressBloc();
     _bloc.getSuraAyesAid.add(index);
     SharedPreferences.getInstance().then((value) {
@@ -207,6 +210,23 @@ class _SuraDetailState extends State<SuraDetail> {
       _pref.setString('bookmarks', json.encode(bookMarkList));
     }
   }
+  playAyetOnly(int sid, int aid)async{
+    reciter = _pref.getInt('current_reciter');
+    reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
+    Directory dir = await getApplicationDocumentsDirectory();
+    print('${dir.path}/$reciterFolder/${sid.toString().padLeft(3,'0')}${aid.toString().padLeft(3, '0')}.mp3');
+    File('${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3').exists().then((exists) {
+      if (exists) {
+        String ayet = '${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3';
+        AudioPlayer ap = AudioPlayer();
+        ap.play(ayet);
+      }
+    });
+    }
+    
+
+
+
 
   @override
   void dispose() {
@@ -235,7 +255,8 @@ class _SuraDetailState extends State<SuraDetail> {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
               child: Text(
-                snapshot.data[index].banglaMurtaza,
+                _auther == 0 ? snapshot.data[index].banglaMurtaza : snapshot.data[index].banglaMohiuddin,
+                
                 style: TextStyle(
                   fontSize: 15.0,
                 ),
@@ -397,12 +418,15 @@ class _SuraDetailState extends State<SuraDetail> {
                     return Material(
                       color: active[index] ? Color(0xffededf4) : Colors.white,
                       child: InkWell(
-                        /*  highlightColor: Theme.of(context).primaryColor, */
                         splashColor: Theme.of(context).primaryColor,
+                        onTap: (){
+                          playAyetOnly(this.index, index + 1);
+                        },
                         onLongPress: () {
                           setBookMark(
                               lang, this.index, ttlayas, index + 1, name);
                         },
+                        
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
@@ -414,14 +438,12 @@ class _SuraDetailState extends State<SuraDetail> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            /*crossAxisAlignment: CrossAxisAlignment.end, */
                             children: <Widget>[
                               Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(20, 4, 20, 4),
                                 child: Flex(
                                   direction: Axis.horizontal,
-                                  /*  mainAxisAlignment: MainAxisAlignment.start, */
                                   textDirection: TextDirection.rtl,
                                   children: <Widget>[
                                     Flexible(
@@ -431,7 +453,6 @@ class _SuraDetailState extends State<SuraDetail> {
                                         style: TextStyle(
                                             fontSize: 25.0,
                                             color: bookmarkColor[index]),
-                                        /* textDirection: TextDirection.rtl,  */
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
@@ -442,14 +463,12 @@ class _SuraDetailState extends State<SuraDetail> {
                                       child: Text(
                                         getNumsAsLang(lang, index + 1),
                                         style: TextStyle(color: Colors.black),
-                                        /* style: TextStyle(fontSize: ), */
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               selectedLang(snapshot, index),
-                              /* selectTranslitration(snapshot, index), */
                             ],
                           ),
                         ),

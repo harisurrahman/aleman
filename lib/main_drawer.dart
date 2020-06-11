@@ -16,10 +16,10 @@ class _MainDrawerState extends State<MainDrawer> {
   bool _translated = false;
   int totalAyas = 0;
   List<Map> _bookMarks = List<Map>();
+  List<bool> _auther = List<bool>.filled(2, false);
 
   @override
   void initState() {
-    
     getBookMarks().then((resp) {
       if (resp != null) {
         _bookMarks.addAll(resp);
@@ -28,8 +28,26 @@ class _MainDrawerState extends State<MainDrawer> {
         });
       }
     });
+
+    getAuther().then((translator){
+      setState(() {
+        _auther[translator] = true;
+      });
+    });
+
+    
+    
     super.initState();
   }
+
+  _setAuther(int auther){
+      _auther[0] = false;
+      _auther[1] = false;
+      setState(() {
+        _auther[auther] = true;
+      });
+      setAuther(auther);
+    }
 
   populateBookmark() async {
     return _bookMarks;
@@ -53,28 +71,15 @@ class _MainDrawerState extends State<MainDrawer> {
     return ListView(
       shrinkWrap: true,
       children: <Widget>[
-        InkWell(
-          child: DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Center(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(top: 24),
-                      width: 180,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/quran-drawer.jpg'),
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    )
-                  ],
-                ),
+        DrawerHeader(
+              
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(image: AssetImage('assets/images/quran-drawer12.png'),
+                  fit: BoxFit.fill,
+                ),)
               )),
-        ),
+      
         Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -203,8 +208,11 @@ class _MainDrawerState extends State<MainDrawer> {
               ),
             ),
             InkWell(
-              onTap: () => Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => Reciter())),
+              onTap: () {
+                setState(() {
+                  _translated = !_translated;
+                });
+              },
               child: Heading(
                 headingText: 'Bangla Translation By',
                 iconsName: Icons.language,
@@ -215,12 +223,15 @@ class _MainDrawerState extends State<MainDrawer> {
               child: Column(
                 children: <Widget>[
                   ListTile(
+                    onTap: (){
+                      _setAuther(0);
+                    },
                       title: Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Wrap(
                       children: <Widget>[
-                        Icon(Icons.translate),
-                        Text('  মুরতোজা হাসান খালেদ'),
+                        Icon(Icons.translate, color: _auther[0]==true ? Theme.of(context).primaryColor:Colors.black,),
+                        Text('  মুরতোজা হাসান খালেদ', style: TextStyle(color: _auther[0]==true ? Theme.of(context).primaryColor:Colors.black),),
                       ],
                     ),
                   )),
@@ -230,12 +241,26 @@ class _MainDrawerState extends State<MainDrawer> {
                     indent: 30,
                   ),
                   ListTile(
+                    onTap: (){
+                      _setAuther(1);
+                    },
                       title: Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Wrap(
                       children: <Widget>[
-                        Icon(Icons.translate),
-                        Text('  মুহিউদ্দীন খান'),
+                        Icon(
+                          Icons.translate,
+                          color: _auther[1] == true
+                              ? Theme.of(context).primaryColor
+                              : Colors.black,
+                        ),
+                        Text(
+                          '  মুহিউদ্দীন খান',
+                          style: TextStyle(
+                              color: _auther[1] == true
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.black),
+                        ),
                       ],
                     ),
                   )),
