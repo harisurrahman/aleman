@@ -100,15 +100,11 @@ class CustomCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: CircleAvatar(
-                radius: 27,
-                backgroundColor: Colors.black,
-                child: CircleAvatar(
-                  radius: 25,
-                  child: Text(
-                    _suraNumber(snapshot, index, lang),
-                    style: TextStyle(
-                      fontSize: lang == 0 ? 30.0 : 20.0,
-                    ),
+                radius: 25,
+                child: Text(
+                  _suraNumber(snapshot, index, lang),
+                  style: TextStyle(
+                    fontSize: lang == 0 ? 30.0 : 20.0,
                   ),
                 ),
               ),

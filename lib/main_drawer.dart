@@ -70,14 +70,14 @@ class _MainDrawerState extends State<MainDrawer> {
       shrinkWrap: true,
       children: <Widget>[
         DrawerHeader(
+            padding: EdgeInsets.all(0.0),
             child: Container(
-          decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-          child: Image(
-           
-            image: AssetImage('assets/images/quran-drawer.gif'),
-            fit: BoxFit.fill,
-          ),
-        )),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: Image(
+                image: AssetImage('assets/images/quran-drawer.gif'),
+                fit: BoxFit.fill,
+              ),
+            )),
         Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
