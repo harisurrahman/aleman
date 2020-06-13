@@ -37,6 +37,8 @@ dependencies:
   shared_preferences: ^0.5.7
   provider: any
   archive: any
+  shimmer: any
+  splashscreen: any
 
 
 dev_dependencies:

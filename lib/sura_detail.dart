@@ -60,12 +60,14 @@ class _SuraDetailState extends State<SuraDetail> {
   int reciter;
   List<Color> bookmarkColor;
   int _auther;
+  AudioPlayer ap;
+  bool _playSingle = false;
   @override
   void initState() {
     super.initState();
-    
+
     bookmarkColor = List.filled(ttlayas, Colors.black);
-    getAuther().then((translator){
+    getAuther().then((translator) {
       _auther = translator;
     });
     _bloc = ProgressBloc();
@@ -93,18 +95,26 @@ class _SuraDetailState extends State<SuraDetail> {
 
     advancedPlayer.onPlayerStateChanged.listen((s) {
       if (s == AudioPlayerState.COMPLETED && count <= ttlayas) {
-        advancedPlayer.play(
-            '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
-        count++;
-        setState(() {
-          active[count - 2] = true;
-          active[count - 3] = false;
-        });
+        Timer _timer;
+        _timer = Timer.periodic(Duration(seconds: 1), (t) {
+          File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${ttlayas.toString().padLeft(3, '0')}.mp3')
+              .exists()
+              .then((x) {
+            _timer.cancel();
+            advancedPlayer.play(
+                '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
+            count++;
+            setState(() {
+              active[count - 2] = true;
+              active[count - 3] = false;
+            });
 
-        itemScrollController.scrollTo(
-            index: (count - 2),
-            duration: Duration(seconds: 2),
-            curve: Curves.easeInOutCubic);
+            itemScrollController.scrollTo(
+                index: (count - 2),
+                duration: Duration(seconds: 2),
+                curve: Curves.easeInOutCubic);
+          });
+        });
       }
     });
 
@@ -142,8 +152,6 @@ class _SuraDetailState extends State<SuraDetail> {
     dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
-      print(
-          '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3');
       await advancedPlayer
           .play(
               '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
@@ -210,22 +218,22 @@ class _SuraDetailState extends State<SuraDetail> {
       _pref.setString('bookmarks', json.encode(bookMarkList));
     }
   }
-  playAyetOnly(int sid, int aid)async{
+
+  playAyetOnly(int sid, int aid) async {
     reciter = _pref.getInt('current_reciter');
     reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
     Directory dir = await getApplicationDocumentsDirectory();
-    File('${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3').exists().then((exists) {
+    File('${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3')
+        .exists()
+        .then((exists) {
       if (exists) {
-        String ayet = '${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3';
-        AudioPlayer ap = AudioPlayer();
+        String ayet =
+            '${dir.path}/$reciterFolder/${sid.toString().padLeft(3, '0')}${aid.toString().padLeft(3, '0')}.mp3';
+        ap = AudioPlayer();
         ap.play(ayet);
       }
     });
-    }
-    
-
-
-
+  }
 
   @override
   void dispose() {
@@ -254,8 +262,9 @@ class _SuraDetailState extends State<SuraDetail> {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
               child: Text(
-                _auther == 0 ? snapshot.data[index].banglaMurtaza : snapshot.data[index].banglaMohiuddin,
-                
+                _auther == 0
+                    ? snapshot.data[index].banglaMurtaza
+                    : snapshot.data[index].banglaMohiuddin,
                 style: TextStyle(
                   fontSize: 15.0,
                 ),
@@ -301,7 +310,7 @@ class _SuraDetailState extends State<SuraDetail> {
       /* if (bookmarkAid != null) {
         bookmarkColor[bookmarkAid - 1] = Colors.black;
       } */
-      bookmarkColor[index-1] = Theme.of(context).primaryColor;
+      bookmarkColor[index - 1] = Theme.of(context).primaryColor;
     });
   }
 
@@ -418,14 +427,21 @@ class _SuraDetailState extends State<SuraDetail> {
                       color: active[index] ? Color(0xffededf4) : Colors.white,
                       child: InkWell(
                         splashColor: Theme.of(context).primaryColor,
-                        onTap: (){
-                          playAyetOnly(this.index, index + 1);
+                        onTap: () {
+                          if (!_isPlaying) {
+                            if (_playSingle) {
+                              ap.stop();
+                              _playSingle = false;
+                            } else {
+                              _playSingle = true;
+                              playAyetOnly(this.index, index + 1);
+                            }
+                          }
                         },
                         onLongPress: () {
                           setBookMark(
                               lang, this.index, ttlayas, index + 1, name);
                         },
-                        
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
