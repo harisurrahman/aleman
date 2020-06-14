@@ -235,7 +235,7 @@ class _MainDrawerState extends State<MainDrawer> {
                                   : Colors.black,
                             ),
                             Text(
-                              '  মুরতোজা হাসান খালেদ',
+                              '  আবদুস শহীদ নাসিম',
                               style: TextStyle(
                                   color: _auther[0] == true
                                       ? Theme.of(context).primaryColor

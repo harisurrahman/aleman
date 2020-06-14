@@ -75,7 +75,8 @@ class _SuraDetailState extends State<SuraDetail> {
     SharedPreferences.getInstance().then((value) {
       _pref = value;
       reciter = _pref.getInt('current_reciter');
-      reciterFolder = reciters[reciter]['name'].replaceAll(' ', '-');
+      
+      reciterFolder = reciter == null ? reciters[0]['name'].replaceAll(' ', '-'):reciters[reciter]['name'].replaceAll(' ', '-');
     });
 
     getApplicationDocumentsDirectory().then((value) {
@@ -100,19 +101,21 @@ class _SuraDetailState extends State<SuraDetail> {
           File('${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${ttlayas.toString().padLeft(3, '0')}.mp3')
               .exists()
               .then((x) {
-            _timer.cancel();
-            advancedPlayer.play(
-                '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
-            count++;
-            setState(() {
-              active[count - 2] = true;
-              active[count - 3] = false;
-            });
+            if (x) {
+              advancedPlayer.play(
+                  '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${count.toString().padLeft(3, '0')}.mp3');
+              _timer.cancel();
+              count++;
+              setState(() {
+                active[count - 2] = true;
+                active[count - 3] = false;
+              });
 
-            itemScrollController.scrollTo(
-                index: (count - 2),
-                duration: Duration(seconds: 2),
-                curve: Curves.easeInOutCubic);
+              itemScrollController.scrollTo(
+                  index: (count - 2),
+                  duration: Duration(seconds: 2),
+                  curve: Curves.easeInOutCubic);
+            }
           });
         });
       }
@@ -144,15 +147,30 @@ class _SuraDetailState extends State<SuraDetail> {
     });
   }
 
-  _play() async {
-    for (int i = 1; i < ttlayas; i++) {
-      active[i] = false;
-    }
+  _fileExists() async {
+    String path =
+        '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(ttlayas).toString().padLeft(3, '0')}.mp3';
+    Timer _timer;
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) async {
+      var exists = await File(path).exists();
+      if (exists) {
+        _timer.cancel();
+        _play();
+      }
+    });
+  }
 
+  _play() async {
+    //await _fileExists();
+    List<bool>.filled(ttlayas, false);
+    /* for (int i = 1; i < ttlayas; i++) {
+      active[i] = false;
+    } */
     dir = await getApplicationDocumentsDirectory();
     if (bookmarkAid != null) {
       count = bookmarkAid;
-      await advancedPlayer
+
+      advancedPlayer
           .play(
               '${dir.path}/$reciterFolder/${index.toString().padLeft(3, '0')}${(count).toString().padLeft(3, '0')}.mp3')
           .then((onValue) {
@@ -175,6 +193,7 @@ class _SuraDetailState extends State<SuraDetail> {
           count = count + 1;
         }
       }
+      
       await advancedPlayer.play('${dir.path}/$reciterFolder/$bismillah.mp3');
       setState(() {
         active[count - count] = true;
@@ -340,7 +359,7 @@ class _SuraDetailState extends State<SuraDetail> {
             onPressed: () {
               if (!_isPlaying) {
                 _bloc.getSid.add(index);
-                _play();
+                _fileExists();
                 //_checkDownloadStatus();
                 _isPlaying = true;
               }

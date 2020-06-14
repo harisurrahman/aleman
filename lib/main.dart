@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
 
   MaterialApp buildMaterialAppWithTheme() {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Al Amin',
       home: HomePage(),
     );
   }

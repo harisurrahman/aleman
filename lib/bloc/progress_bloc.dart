@@ -99,9 +99,14 @@ class ProgressBloc {
         final filename = file.name;
         if (file.isFile) {
           final data = file.content as List<int>;
-          File('${dir.path}/$reciterFolder/' + filename)
+          
+          bool ayetExists = await File('${dir.path}/$reciterFolder/' + filename).exists();
+          if(!ayetExists){
+            File('${dir.path}/$reciterFolder/' + filename)
             ..createSync(recursive: true)
             ..writeAsBytesSync(data);
+          }
+          
         } else {
           Directory('${dir.path}/$reciterFolder/' + filename)..create(recursive: true);
         }
